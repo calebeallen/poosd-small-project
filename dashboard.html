@@ -7,30 +7,49 @@
 </head>
 <body>
   <div class="container">
-    <h1>Welcome to Your Contacts</h1>
-    <button onclick="logout()">Logout</button>
-
+    <h1 id="welcomeMessage">Welcome to Your Contacts</h1>
+    
     <div id="addContactDiv">
-      <h2>Add Contact</h2>
-      <input type="text" id="contactName" placeholder="Name">
-      <input type="text" id="contactPhone" placeholder="Phone">
-      <input type="email" id="contactEmail" placeholder="Email">
-      <input type="text" id="contactAddress" placeholder="Address">
-      <button onclick="addContact()">Add</button>
+      <h2>Add New Contact</h2>
+      <div class="form-group">
+        <label for="contactName">Name *</label>
+        <input type="text" id="contactName" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label for="contactPhone">Phone</label>
+        <input type="tel" id="contactPhone" placeholder="Phone number">
+      </div>
+      <div class="form-group">
+        <label for="contactEmail">Email</label>
+        <input type="email" id="contactEmail" placeholder="Email address">
+      </div>
+      <div class="form-group">
+        <label for="contactAddress">Address</label>
+        <input type="text" id="contactAddress" placeholder="Full address">
+      </div>
+      <button onclick="addContact()">Add Contact</button>
+      <button class="btn-secondary" onclick="clearForm()">Clear Form</button>
     </div>
-
+    
     <div id="searchDiv">
       <h2>Search Contacts</h2>
-      <input type="text" id="searchQuery" placeholder="Search...">
-      <button onclick="searchContacts()">Search</button>
+      <div class="search-container">
+        <input type="text" id="searchQuery" placeholder="Type to search by name, phone, email, or address...">
+        <button class="btn-secondary hidden" id="clearSearchBtn" onclick="clearSearch()">Clear Search</button>
+      </div>
+      <div class="stats">
+        <strong>Total Contacts: <span id="contactCount">0</span></strong>
+      </div>
     </div>
-
+    
     <div id="contactsList">
-      <h2>Contacts</h2>
-      <ul id="results"></ul>
+      <h2>Your Contacts</h2>
+      <div id="results"></div>
     </div>
   </div>
-
+  
+  <button class="logout-btn" onclick="logout()">Logout</button>
+  
   <script src="js/contacts.js"></script>
 </body>
 </html>

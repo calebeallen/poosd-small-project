@@ -8,28 +8,43 @@
 <body>
   <div class="container">
     <h1>Personal Contact Manager</h1>
-
+    
     <div id="loginDiv">
       <h2>Login</h2>
-      <input type="text" id="loginName" placeholder="Username">
-      <input type="password" id="loginPassword" placeholder="Password">
+      <div class="form-group">
+        <label for="loginName">Username</label>
+        <input type="text" id="loginName" placeholder="Enter your username">
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password">
+      </div>
       <button onclick="doLogin()">Login</button>
-      <p id="loginResult"></p>
+      <div id="loginResult"></div>
+          <div id="signupDiv">
+      <button class="signup-link" onclick="showSignup()">
+        Don't have an account? Sign Up
+      </button>
+      <div id="signupResult"></div>
+    </div>
     </div>
 
-    <!-- <div id="signupDiv">
-      <h2>Sign Up</h2>
-      <input type="text" id="signupName" placeholder="Username">
-      <input type="email" id="signupEmail" placeholder="Email">
-      <input type="password" id="signupPassword" placeholder="Password">
-      <button onclick="doSignup()">Sign Up</button>
-      <p id="signupResult"></p>
-    </div> -->
-    <div id="signupDiv">
-        <button class="signup" onclick="doSignup()">
-            Sign Up
-        </button>
-        <p id="signupResult"></p>
+    <div id="signupForm" class="hidden">
+      <h2>Create Account</h2>
+      <div class="form-group">
+        <label for="signupName">Username</label>
+        <input type="text" id="signupName" placeholder="Choose a username">
+      </div>
+      <div class="form-group">
+        <label for="signupEmail">Email</label>
+        <input type="email" id="signupEmail" placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="Choose a password">
+      </div>
+      <button onclick="doSignup()">Create Account</button>
+      <button class="btn-secondary" onclick="showLogin()">Back to Login</button>
     </div>
   </div>
 
