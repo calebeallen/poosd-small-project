@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact Manager - Login</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Personal Contact Manager</h1>
+
+    <div id="loginDiv">
+      <h2>Login</h2>
+      <input type="text" id="loginName" placeholder="Username">
+      <input type="password" id="loginPassword" placeholder="Password">
+      <button onclick="doLogin()">Login</button>
+      <p id="loginResult"></p>
+    </div>
+
+    <!-- <div id="signupDiv">
+      <h2>Sign Up</h2>
+      <input type="text" id="signupName" placeholder="Username">
+      <input type="email" id="signupEmail" placeholder="Email">
+      <input type="password" id="signupPassword" placeholder="Password">
+      <button onclick="doSignup()">Sign Up</button>
+      <p id="signupResult"></p>
+    </div> -->
+    <div id="signupDiv">
+        <button class="signup" onclick="doSignup()">
+            Sign Up
+        </button>
+        <p id="signupResult"></p>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>
