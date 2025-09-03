@@ -316,3 +316,58 @@ document.addEventListener("DOMContentLoaded", function() {
   
   initializeDashboard();
 });
+
+
+let deathstarClicked = false;
+
+function initializeDeathStar() {
+  const deathstar = document.querySelector(".deathstar");
+  
+  if (deathstar) {
+    deathstar.addEventListener("click", handleDeathStarClick);
+  }
+}
+
+function handleDeathStarClick() {
+  if (deathstarClicked) return;
+  
+  deathstarClicked = true;
+  const deathstar = document.querySelector(".deathstar");
+  
+  const message = createTrapMessage();
+  document.body.appendChild(message);
+  
+  setTimeout(() => {
+    deathstar.classList.add("replaced");
+    
+    setTimeout(() => {
+      deathstar.classList.add("fade");
+      
+      message.classList.add("fade-out");
+      
+      setTimeout(() => {
+        if (document.body.contains(message)) {
+          document.body.removeChild(message);
+        }
+        setTimeout(() => {
+          if (document.body.contains(deathstar)) {
+            deathstar.style.display = 'none';
+          }
+        }, 2000);
+      }, 1000);
+      
+    }, 3000);
+  }, 1500);
+}
+
+function createTrapMessage() {
+  const messageDiv = document.createElement("div");
+  messageDiv.className = "deathstar-message";
+  messageDiv.textContent = "IT'S A TRAP!";
+  
+  return messageDiv;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  initializeDeathStar();
+});

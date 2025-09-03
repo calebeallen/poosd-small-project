@@ -123,10 +123,11 @@ body::after {
 .deathstar-message {
   position: fixed;
   top: calc(75% + 70px);
-  left: 14%;
+  left: calc(12% + 30px);
   transform: translateX(-50%);
   background: none;
-  color: #FFE81F;
+  color: black;
+  -webkit-text-stroke: 1px #FFE81F;
   padding: 10px 20px;
   border-radius: 8px;
   font-weight: bold;
