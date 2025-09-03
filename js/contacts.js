@@ -1,4 +1,4 @@
-// const apiBase = "http://yourdomain.com/LAMPAPI"; // Uncomment when backend is ready
+// const apiBase = "http://ourdomain.com/LAMPAPI"; // Uncomment when backend is ready
 
 let mockContacts = [
   { id: 1, name: "John Doe", phone: "555-1234", email: "john@example.com", address: "123 Main St" },
