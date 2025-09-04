@@ -1,44 +1,62 @@
-
 <?php
+// Simple demo login (mysqli + password_verify)
 
-	$reqData = json_decode(file_get_contents('php://input'), true);
-	
-	$id = 0;
-	$firstName = "";
-	$lastName = "";
+function ok($data) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Success", "data" => $data]);
+    exit;
+}
+function bad($err) {
+    http_response_code(400);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Bad request", "err" => $err]);
+    exit;
+}
+function err($err) {
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Error", "err" => $err]);
+    exit;
+}
 
-	$conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331"); 	
-	if ( $conn->connect_error ) {
-		returnWithError( $mysql->connect_error );
-	} else {
-		$mysql = $conn->prepare("SELECT ID,firstName,lastName FROM Users WHERE Login=? AND Password =?");
-		$mysql->bind_param("ss", $reqData["login"], $reqData["password"]);
-		$stmt->execute();
-		$result = $stmt->get_result();
+$reqData = json_decode(file_get_contents('php://input'), true);
+if (!is_array($reqData)) 
+    bad("Invalid JSON");
 
-		if($row = $result->fetch_assoc()) {
-			returnWithInfo($row['firstName'], $row['lastName'], $row['ID']);
-		} else {
-			returnWithError("No Records Found");
-		}
 
-		$stmt->close();
-		$conn->close();
-	}
+$username = trim($reqData["username"] ?? $reqData["loginName"] ?? "");
+$password = (string)($reqData["password"] ?? "");
 
-	function sendResultInfoAsJson($obj) {
-		header('Content-type: application/json');
-		echo $obj;
-	}
-	
-	function returnWithError($err) {
-		$retValue = '{"id":0,"firstName":"","lastName":"","error":"' . $err . '"}';
-		sendResultInfoAsJson( $retValue );
-	}
-	
-	function returnWithInfo($firstName, $lastName, $id) {
-		$retValue = '{"id":' . $id . ',"firstName":"' . $firstName . '","lastName":"' . $lastName . '","error":""}';
-		sendResultInfoAsJson( $retValue );
-	}
-	
-?>
+if ($username === "" || $password === "") 
+    bad("username and password required");
+
+$conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331");
+if ($conn->connect_error) 
+    err($conn->connect_error);
+
+
+$stmt = $conn->prepare("SELECT ID, username, passwordHash FROM Users WHERE username = ?");
+if (!$stmt) 
+    err($conn->error);
+
+$stmt->bind_param("s", $username);
+if (!$stmt->execute()) {
+    $err = $conn->error;
+    $stmt->close();
+    $conn->close();
+    err($err);
+}
+
+$res = $stmt->get_result();
+$row = $res ? $res->fetch_assoc() : null;
+
+if (!$row || !password_verify($password, $row['passwordHash'])) {
+    $stmt->close();
+    $conn->close();
+    bad("User not found.");
+}
+
+$stmt->close();
+$conn->close();
+ok(["id" => (int)$row['ID'], "username" => $row['username']]);
