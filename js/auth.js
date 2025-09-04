@@ -9,31 +9,27 @@ function doLogin() {
     return;
   }
 
-  // TODO: Replace with actual API call when backend is ready
-  // const payload = { login: username, password: password };
-  // fetch(apiBase + "/login.php", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload)
-  // })
-  // .then(res => res.json())
-  // .then(response => {
-  //   if (response.id > 0) {
-  //     localStorage.setItem("userId", response.id);
-  //     localStorage.setItem("username", username);
-  //     window.location.href = "dashboard.html";
-  //   } else {
-  //     showMessage("loginResult", "Login failed.", "error");
-  //   }
-  // })
-  // .catch(error => {
-  //   showMessage("loginResult", "Login error. Please try again.", "error");
-  // });
+  const payload = { login: username, password: password };
 
-  // Mock authentication - remove when backend is ready
-  localStorage.setItem("userId", "1");
-  localStorage.setItem("username", username);
-  window.location.href = "dashboard.html";
+  fetch(apiBase + "/Login.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.id > 0) {
+      localStorage.setItem("userId", response.id);
+      localStorage.setItem("username", username);
+      window.location.href = "dashboard.html";
+    } else {
+      showMessage("loginResult", "Login failed.", "error");
+    }
+  })
+  .catch(error => {
+    showMessage("loginResult", "Login error. Please try again.", "error");
+  });
+  
 }
 
 function doSignup() {
@@ -51,37 +47,30 @@ function doSignup() {
     return;
   }
 
-  // TODO: Replace with actual API call when backend is ready
-    const payload = { username: username, email: email, password: password };
-    fetch(apiBase + "/register.php", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json" 
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(response => {
-        if (response.success) {
-        showMessage("signupResult", "Account created successfully!", "success");
-        setTimeout(() => {
-            showLogin();
-            document.getElementById("loginName").value = username;
-        }, 1500);
-        } else {
-        showMessage("signupResult", "Signup failed. Please try again.", "error");
-        }
-    })
-    .catch(error => {
-        showMessage("signupResult", "Signup error. Please try again.", "error");
-    });
+  
+   const payload = { username: username, email: email, password: password };
+   fetch(apiBase + "/Register.php", {
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify(payload)
+   })
+   .then(res => res.json())
+   .then(response => {
+     if (response.success) {
+       showMessage("signupResult", "Account created successfully!", "success");
+       setTimeout(() => {
+         showLogin();
+         document.getElementById("loginName").value = username;
+       }, 1500);
+     } else {
+       showMessage("signupResult", "Signup failed. Please try again.", "error");
+     }
+   })
+   .catch(error => {
+     showMessage("signupResult", "Signup error. Please try again.", "error");
+   });
 
-  // Mock signup - remove when backend is ready
-  showMessage("signupResult", "Account created successfully!", "success");
-  setTimeout(() => {
-    showLogin();
-    document.getElementById("loginName").value = username;
-  }, 1500);
+  
 }
 
 function showLogin() {
