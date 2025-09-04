@@ -20,43 +20,46 @@ function err($err) {
     exit;
 }
 
-$reqData = json_decode(file_get_contents('php://input'), true);
+try {
 
-if (!is_array($reqData)) 
-    bad("Invalid JSON");
+    $reqData = json_decode(file_get_contents('php://input'), true);
 
-$username = trim($reqData["username"]);
-$password = (string)($reqData["password"] ?? "");
+    $username = trim($reqData["username"]);
+    $password = (string)($reqData["password"] ?? "");
 
-if ($username === "" || $password === "") 
-    bad("username and password required");
+    $hash = password_hash($password, PASSWORD_DEFAULT);
 
-$hash = password_hash($password);
+    // connect to mysql
+    $conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331");
+    if ($conn->connect_error) 
+        err($conn->connect_error);
 
-$conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331");
+    // create new user entry
+    $stmt = $conn->prepare("INSERT INTO Users (username, passwordHash) VALUES (?, ?)");
+    if (!$stmt) 
+        err($conn->error);
+    $stmt->bind_param("ss", $username, $hash);
 
-if ($conn->connect_error) err($conn->connect_error);
-    $conn->set_charset('utf8mb4');
-
-$stmt = $conn->prepare("INSERT INTO Users (username, passwordHash) VALUES (?, ?)");
-if (!$stmt) err($conn->error);
-$stmt->bind_param("ss", $username, $hash);
-
-if (!$stmt->execute()) {
-    // 1062 = duplicate entry (unique constraint on username)
-    if ($conn->errno === 1062) {
+    // handle insert failure
+    if (!$stmt->execute()) {
+        // if row already exists...
+        if ($conn->errno === 1062) {
+            $stmt->close();
+            $conn->close();
+            bad("User already exists");
+        }
+        // other error
+        $e = $conn->error;
         $stmt->close();
         $conn->close();
-        bad("User already exists");
+        err($e);
     }
-    $e = $conn->error;
+
     $stmt->close();
     $conn->close();
-    err($e);
+    ok("User created");
+
+
+} catch (\Throwable $e) {
+    err($e->getMessage());
 }
-
-$stmt->close();
-$conn->close();
-ok("User created");
-
-

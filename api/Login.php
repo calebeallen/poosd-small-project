@@ -20,43 +20,52 @@ function err($err) {
     exit;
 }
 
-$reqData = json_decode(file_get_contents('php://input'), true);
-if (!is_array($reqData)) 
-    bad("Invalid JSON");
+try {
 
+    $reqData = json_decode(file_get_contents('php://input'), true);
 
-$username = trim($reqData["username"] ?? $reqData["loginName"] ?? "");
-$password = (string)($reqData["password"] ?? "");
+    $username = trim($reqData["username"] ?? $reqData["loginName"] ?? "");
+    $password = (string)($reqData["password"] ?? "");
 
-if ($username === "" || $password === "") 
-    bad("username and password required");
+    if ($username === "" || $password === "") 
+        bad("username and password required");
 
-$conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331");
-if ($conn->connect_error) 
-    err($conn->connect_error);
+    // connect to mysql
+    $conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331");
+    if ($conn->connect_error) 
+        err($conn->connect_error);
 
+    // get user by username
+    $stmt = $conn->prepare("SELECT ID, username, passwordHash FROM Users WHERE username = ?");
+    if (!$stmt)
+        err($conn->error);
 
-$stmt = $conn->prepare("SELECT ID, username, passwordHash FROM Users WHERE username = ?");
-if (!$stmt) 
-    err($conn->error);
+    $stmt->bind_param("s", $username);
+    if (!$stmt->execute()) {
+        $err = $conn->error;
+        $stmt->close();
+        $conn->close();
+        err($err);
+    }
 
-$stmt->bind_param("s", $username);
-if (!$stmt->execute()) {
-    $err = $conn->error;
+    $res = $stmt->get_result();
+    $row = $res ? $res->fetch_assoc() : null;
+
+    // check that user entry was found and pwd hash is matches
+    if (!$row || !password_verify($password, $row['passwordHash'])) {
+        $stmt->close();
+        $conn->close();
+        bad("User not found.");
+    }
+
+    // return user data
     $stmt->close();
     $conn->close();
-    err($err);
+    ok([
+        "id" => (int)$row['ID'], 
+        "username" => $row['username']
+    ]);
+
+} catch (\Throwable $e) {
+    err($e->getMessage());
 }
-
-$res = $stmt->get_result();
-$row = $res ? $res->fetch_assoc() : null;
-
-if (!$row || !password_verify($password, $row['passwordHash'])) {
-    $stmt->close();
-    $conn->close();
-    bad("User not found.");
-}
-
-$stmt->close();
-$conn->close();
-ok(["id" => (int)$row['ID'], "username" => $row['username']]);
