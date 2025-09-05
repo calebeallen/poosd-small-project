@@ -31,12 +31,12 @@ try {
         bad("username and password required");
 
     // connect to mysql
-    $conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331");
+    $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
     if ($conn->connect_error) 
         err($conn->connect_error);
 
     // get user by username
-    $stmt = $conn->prepare("SELECT ID, username, passwordHash FROM Users WHERE username = ?");
+    $stmt = $conn->prepare("SELECT userID, username, passwordHash FROM Users WHERE username = ?");
     if (!$stmt)
         err($conn->error);
 

@@ -30,7 +30,7 @@ try {
     $hash = password_hash($password, PASSWORD_DEFAULT);
 
     // connect to mysql
-    $conn = new mysqli("localhost", "TheBeast", "WeLoveCOP4331", "COP4331");
+    $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
     if ($conn->connect_error) 
         err($conn->connect_error);
 
