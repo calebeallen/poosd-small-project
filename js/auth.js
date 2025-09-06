@@ -9,7 +9,7 @@ function doLogin() {
     return;
   }
 
-  const payload = { login: username, password: password };
+  const payload = { username: username, password: password };
 
   fetch(apiBase + "/Login.php", {
     method: "POST",
@@ -18,9 +18,9 @@ function doLogin() {
   })
   .then(res => res.json())
   .then(response => {
-    if (response.id > 0) {
-      localStorage.setItem("userId", response.id);
-      localStorage.setItem("username", username);
+    if (response.status === "Success" && response.data.id > 0) {
+      localStorage.setItem("userId", response.data.id);
+      localStorage.setItem("username", response.data.username);
       window.location.href = "dashboard.html";
     } else {
       showMessage("loginResult", "Login failed.", "error");
@@ -56,7 +56,7 @@ function doSignup() {
    })
    .then(res => res.json())
    .then(response => {
-     if (response.success) {
+     if (response.status === "Success") {
        showMessage("signupResult", "Account created successfully!", "success");
        setTimeout(() => {
          showLogin();
