@@ -1,5 +1,5 @@
 <?php
-// Simple demo login (mysqli + password_verify)
+// Simple demo register (mysqli + password_hash)
 
 function ok($data) {
     http_response_code(200);
@@ -24,47 +24,41 @@ try {
 
     $reqData = json_decode(file_get_contents('php://input'), true);
 
-    $username = trim($reqData["username"] ?? $reqData["loginName"] ?? "");
+    $username = trim($reqData["username"]);
     $password = (string)($reqData["password"] ?? "");
 
-    if ($username === "" || $password === "") 
-        bad("username and password required");
+    $hash = password_hash($password, PASSWORD_DEFAULT);
 
     // connect to mysql
     $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // get user by username
-    $stmt = $conn->prepare("SELECT userID, username, passwordHash FROM Users WHERE username = ?");
-    if (!$stmt)
+    // create new user entry
+    $stmt = $conn->prepare("INSERT INTO Users (username, passwordHash) VALUES (?, ?)");
+    if (!$stmt) 
         err($conn->error);
+    $stmt->bind_param("ss", $username, $hash);
 
-    $stmt->bind_param("s", $username);
+    // handle insert failure
     if (!$stmt->execute()) {
-        $err = $conn->error;
+        // if row already exists...
+        if ($conn->errno === 1062) {
+            $stmt->close();
+            $conn->close();
+            bad("User already exists");
+        }
+        // other error
+        $e = $conn->error;
         $stmt->close();
         $conn->close();
-        err($err);
+        err($e);
     }
 
-    $res = $stmt->get_result();
-    $row = $res ? $res->fetch_assoc() : null;
-
-    // check that user entry was found and pwd hash is matches
-    if (!$row || !password_verify($password, $row['passwordHash'])) {
-        $stmt->close();
-        $conn->close();
-        bad("User not found.");
-    }
-
-    // return user data
     $stmt->close();
     $conn->close();
-    ok([
-        "id" => (int)$row['ID'], 
-        "username" => $row['username']
-    ]);
+    ok("User created");
+
 
 } catch (\Throwable $e) {
     err($e->getMessage());

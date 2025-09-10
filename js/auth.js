@@ -52,27 +52,29 @@ function doSignup() {
   }
 
   // TODO: Replace with actual API call when backend is ready
-  // const payload = { username: username, email: email, password: password };
-  // fetch(apiBase + "/register.php", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload)
-  // })
-  // .then(res => res.json())
-  // .then(response => {
-  //   if (response.success) {
-  //     showMessage("signupResult", "Account created successfully!", "success");
-  //     setTimeout(() => {
-  //       showLogin();
-  //       document.getElementById("loginName").value = username;
-  //     }, 1500);
-  //   } else {
-  //     showMessage("signupResult", "Signup failed. Please try again.", "error");
-  //   }
-  // })
-  // .catch(error => {
-  //   showMessage("signupResult", "Signup error. Please try again.", "error");
-  // });
+    const payload = { username: username, email: email, password: password };
+    fetch(apiBase + "/register.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json" 
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(response => {
+        if (response.success) {
+        showMessage("signupResult", "Account created successfully!", "success");
+        setTimeout(() => {
+            showLogin();
+            document.getElementById("loginName").value = username;
+        }, 1500);
+        } else {
+        showMessage("signupResult", "Signup failed. Please try again.", "error");
+        }
+    })
+    .catch(error => {
+        showMessage("signupResult", "Signup error. Please try again.", "error");
+    });
 
   // Mock signup - remove when backend is ready
   showMessage("signupResult", "Account created successfully!", "success");
