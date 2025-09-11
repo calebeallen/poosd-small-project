@@ -14,28 +14,6 @@
   <div class="container">
     <h1 id="welcomeMessage">Welcome to Your Contacts</h1>
     
-    <div id="addContactDiv">
-      <h2>Add New Contact</h2>
-      <div class="form-group">
-        <label for="contactName">Name *</label>
-        <input type="text" id="contactName" placeholder="Full name" required>
-      </div>
-      <div class="form-group">
-        <label for="contactPhone">Phone</label>
-        <input type="tel" id="contactPhone" placeholder="Phone number">
-      </div>
-      <div class="form-group">
-        <label for="contactEmail">Email</label>
-        <input type="email" id="contactEmail" placeholder="Email address">
-      </div>
-      <div class="form-group">
-        <label for="contactAddress">Address</label>
-        <input type="text" id="contactAddress" placeholder="Full address">
-      </div>
-      <button onclick="addContact()">Add Contact</button>
-      <button class="btn-secondary" onclick="clearForm()">Clear Form</button>
-    </div>
-    
     <div id="searchDiv">
       <h2>Search Contacts</h2>
       <div class="search-container">
@@ -48,8 +26,68 @@
     </div>
     
     <div id="contactsList">
+              <button class="add-contact-btn" onclick="openAddModal()">
+          Add New Contact
+        </button>
       <h2>Your Contacts</h2>
+
       <div id="results"></div>
+    </div>
+  </div>
+  
+  <!-- Add Contact Modal -->
+  <div id="addModal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal('addModal')">&times;</button>
+      <h2>Add New Contact</h2>
+      <div class="form-group">
+        <label for="addContactName">Name *</label>
+        <input type="text" id="addContactName" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label for="addContactPhone">Phone</label>
+        <input type="tel" id="addContactPhone" placeholder="Phone number">
+      </div>
+      <div class="form-group">
+        <label for="addContactEmail">Email</label>
+        <input type="email" id="addContactEmail" placeholder="Email address">
+      </div>
+      <div class="form-group">
+        <label for="addContactAddress">Address</label>
+        <input type="text" id="addContactAddress" placeholder="Full address">
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-primary" onclick="addContact()">Add Contact</button>
+        <button class="btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Contact Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal('editModal')">&times;</button>
+      <h2>Edit Contact</h2>
+      <div class="form-group">
+        <label for="editContactName">Name *</label>
+        <input type="text" id="editContactName" placeholder="Full name" required>
+      </div>
+      <div class="form-group">
+        <label for="editContactPhone">Phone</label>
+        <input type="tel" id="editContactPhone" placeholder="Phone number">
+      </div>
+      <div class="form-group">
+        <label for="editContactEmail">Email</label>
+        <input type="email" id="editContactEmail" placeholder="Email address">
+      </div>
+      <div class="form-group">
+        <label for="editContactAddress">Address</label>
+        <input type="text" id="editContactAddress" placeholder="Full address">
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-primary" onclick="updateContact()">Update Contact</button>
+        <button class="btn-secondary" onclick="closeModal('editModal')">Cancel</button>
+      </div>
     </div>
   </div>
   

@@ -7,6 +7,7 @@ let mockContacts = [
 ];
 
 let searchTimeout;
+let editingContactId = null;
 
 function initializeDashboard() {
   const username = localStorage.getItem("username") || "User";
@@ -101,11 +102,38 @@ function logout() {
   window.location.href = "index.html";
 }
 
+// Modal functions
+function openAddModal() {
+  clearAddForm();
+  openModal('addModal');
+}
+
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  modal.classList.add('show');
+  
+  // Focus first input
+  const firstInput = modal.querySelector('input');
+  if (firstInput) {
+    setTimeout(() => firstInput.focus(), 100);
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  modal.classList.remove('show');
+  
+  if (modalId === 'editModal') {
+    editingContactId = null;
+  }
+}
+
+// Contact management functions
 function addContact() {
-  const name = document.getElementById("contactName").value.trim();
-  const phone = document.getElementById("contactPhone").value.trim();
-  const email = document.getElementById("contactEmail").value.trim();
-  const address = document.getElementById("contactAddress").value.trim();
+  const name = document.getElementById("addContactName").value.trim();
+  const phone = document.getElementById("addContactPhone").value.trim();
+  const email = document.getElementById("addContactEmail").value.trim();
+  const address = document.getElementById("addContactAddress").value.trim();
 
   if (!name) {
     alert("Name is required!");
@@ -128,20 +156,21 @@ function addContact() {
   // .then(res => res.json())
   // .then(response => {
   //   if (response.success) {
-  //     clearForm();
-  //     loadContacts(); // Refresh contact list
+  //     updateContactCount();
+  //     liveSearchContacts();
+  //     closeModal('addModal');
   //     showTemporaryMessage("Contact added successfully!", "success");
   //   } else {
-  //     alert("Error adding contact. Please try again.");
+  //     alert("Error creating contact. Please try again.");
   //   }
   // })
   // .catch(error => {
-  //   alert("Error adding contact. Please try again.");
+  //   alert("Error creating contact. Please try again.");
   // });
 
   // Mock add contact - remove when backend is ready
   const newContact = {
-    id: mockContacts.length + 1,
+    id: Math.max(...mockContacts.map(c => c.id), 0) + 1,
     name,
     phone: phone || "Not provided",
     email: email || "Not provided",
@@ -149,12 +178,81 @@ function addContact() {
   };
 
   mockContacts.push(newContact);
-  clearForm();
   updateContactCount();
-  
   liveSearchContacts();
-  
+  closeModal('addModal');
   showTemporaryMessage("Contact added successfully!", "success");
+}
+
+function editContact(id) {
+  const contact = mockContacts.find(c => c.id === id);
+  if (!contact) return;
+
+  editingContactId = id;
+
+  // Populate edit form
+  document.getElementById("editContactName").value = contact.name;
+  document.getElementById("editContactPhone").value = contact.phone === "Not provided" ? "" : contact.phone;
+  document.getElementById("editContactEmail").value = contact.email === "Not provided" ? "" : contact.email;
+  document.getElementById("editContactAddress").value = contact.address === "Not provided" ? "" : contact.address;
+
+  openModal('editModal');
+}
+
+function updateContact() {
+  if (!editingContactId) return;
+
+  const name = document.getElementById("editContactName").value.trim();
+  const phone = document.getElementById("editContactPhone").value.trim();
+  const email = document.getElementById("editContactEmail").value.trim();
+  const address = document.getElementById("editContactAddress").value.trim();
+
+  if (!name) {
+    alert("Name is required!");
+    return;
+  }
+
+  if (email && !isValidEmail(email)) {
+    alert("Please enter a valid email address!");
+    return;
+  }
+
+  // TODO: Replace with actual API call when backend is ready
+  // const payload = { contactId: editingContactId, name, phone, email, address };
+  // fetch(apiBase + "/updateContact.php", {
+  //   method: "POST",
+  //   headers: { "Content-Type": "application/json" },
+  //   body: JSON.stringify(payload)
+  // })
+  // .then(res => res.json())
+  // .then(response => {
+  //   if (response.success) {
+  //     liveSearchContacts();
+  //     closeModal('editModal');
+  //     showTemporaryMessage("Contact updated successfully!", "success");
+  //   } else {
+  //     alert("Error updating contact. Please try again.");
+  //   }
+  // })
+  // .catch(error => {
+  //   alert("Error updating contact. Please try again.");
+  // });
+
+  // Mock update contact - remove when backend is ready
+  const contactIndex = mockContacts.findIndex(c => c.id === editingContactId);
+  if (contactIndex !== -1) {
+    mockContacts[contactIndex] = {
+      id: editingContactId,
+      name,
+      phone: phone || "Not provided",
+      email: email || "Not provided",
+      address: address || "Not provided"
+    };
+
+    liveSearchContacts();
+    closeModal('editModal');
+    showTemporaryMessage("Contact updated successfully!", "success");
+  }
 }
 
 function searchContacts() {
@@ -229,21 +327,6 @@ function highlightSearchTerm(text) {
   return text.replace(regex, '<mark>$1</mark>');
 }
 
-function editContact(id) {
-  const contact = mockContacts.find(c => c.id === id);
-  if (!contact) return;
-
-  document.getElementById("contactName").value = contact.name;
-  document.getElementById("contactPhone").value = contact.phone === "Not provided" ? "" : contact.phone;
-  document.getElementById("contactEmail").value = contact.email === "Not provided" ? "" : contact.email;
-  document.getElementById("contactAddress").value = contact.address === "Not provided" ? "" : contact.address;
-
-  mockContacts = mockContacts.filter(c => c.id !== id);
-  updateContactCount();
-  
-  liveSearchContacts();
-}
-
 function deleteContact(id) {
   if (!confirm("Are you sure you want to delete this contact?")) {
     return;
@@ -278,11 +361,11 @@ function deleteContact(id) {
   showTemporaryMessage("Contact deleted successfully!", "success");
 }
 
-function clearForm() {
-  document.getElementById("contactName").value = "";
-  document.getElementById("contactPhone").value = "";
-  document.getElementById("contactEmail").value = "";
-  document.getElementById("contactAddress").value = "";
+function clearAddForm() {
+  document.getElementById("addContactName").value = "";
+  document.getElementById("addContactPhone").value = "";
+  document.getElementById("addContactEmail").value = "";
+  document.getElementById("addContactAddress").value = "";
 }
 
 function updateContactCount() {
@@ -296,7 +379,7 @@ function showTemporaryMessage(message, type) {
   messageDiv.style.position = "fixed";
   messageDiv.style.top = "20px";
   messageDiv.style.right = "20px";
-  messageDiv.style.zIndex = "1000";
+  messageDiv.style.zIndex = "2001";
   messageDiv.style.minWidth = "250px";
   messageDiv.style.textAlign = "center";
   
@@ -323,6 +406,21 @@ document.addEventListener("DOMContentLoaded", function() {
   initializeDashboard();
 });
 
+// Event listeners for modal functionality
+document.addEventListener("click", function(e) {
+  if (e.target.classList.contains('modal')) {
+    closeModal(e.target.id);
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    const openModal = document.querySelector('.modal.show');
+    if (openModal) {
+      closeModal(openModal.id);
+    }
+  }
+});
 
 let deathstarClicked = false;
 
