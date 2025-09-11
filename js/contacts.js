@@ -206,8 +206,14 @@ function displayContacts(contacts) {
         <strong>Address:</strong> ${highlightSearchTerm(contact.address)}
       </div>
       <div class="contact-actions">
-        <button class="btn-secondary" onclick="editContact(${contact.id})">Edit</button>
-        <button class="btn-danger" onclick="deleteContact(${contact.id})">Delete</button>
+        <button class="btn-secondary" onclick="editContact(${contact.id})">
+        Edit
+        <img src="images/edit.png" alt="Edit" style="width:16px; height:16px; vertical-align: middle; filter: invert(1);">
+        </button>
+        <button class="btn-danger" onclick="deleteContact(${contact.id})">
+        Delete
+        <img src="images/trashcan.png" alt="Delete" style="width:16px; height:16px; vertical-align: middle; filter: invert(1);">
+        </button>
       </div>
     </div>
   `).join("");
