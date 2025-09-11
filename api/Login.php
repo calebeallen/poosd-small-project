@@ -13,6 +13,12 @@ function bad($err) {
     echo json_encode(["status" => "Bad request", "err" => $err]);
     exit;
 }
+function unauth($err) {
+    http_response_code(403);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Unauthorized", "err" => $err]);
+    exit;
+}
 function err($err) {
     http_response_code(500);
     header('Content-Type: application/json');
@@ -28,7 +34,7 @@ try {
     $password = (string)($reqData["password"] ?? "");
 
     if ($username === "" || $password === "") 
-        bad("username and password required");
+        bad("Missing fields");
 
     // connect to mysql
     $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
@@ -55,14 +61,14 @@ try {
     if (!$row || !password_verify($password, $row['passwordHash'])) {
         $stmt->close();
         $conn->close();
-        bad("User not found.");
+        unauth("Invalid credentials");
     }
 
     // return user data
     $stmt->close();
     $conn->close();
     ok([
-        "id" => (int)$row['ID'], 
+        "id" => (int)$row['userID'], 
         "username" => $row['username']
     ]);
 

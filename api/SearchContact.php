@@ -24,10 +24,10 @@ try {
 
     $reqData = json_decode(file_get_contents('php://input'), true);
 
-    $userIdStr = trim($reqData["userId"] ?? "");
+    $userIdStr = $reqData["userId"];
     $query = trim($reqData["query"] ?? "");
 
-    if ($userIdsStr === "" || $query === "") 
+    if ($userId === 0 || $query === "") 
         bad("username and password required");
 
     $userId = (int)$userIdStr;
@@ -40,7 +40,7 @@ try {
     // get user by username
    $stmt = $conn->prepare("
         SELECT contactID, userID, firstName, lastName, email, phoneNumber
-        FROM contacts
+        FROM Contacts  
         WHERE userID = ?
         AND (
             firstName   LIKE CONCAT('%', ?, '%')

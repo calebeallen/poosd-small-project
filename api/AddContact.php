@@ -24,14 +24,14 @@ try {
 
     $reqData = json_decode(file_get_contents('php://input'), true);
 
-    $userIdStr = trim($reqData["userId"] ?? "");
+    $userId = $reqData["userId"] ?? 0;
     $firstName = trim($reqData["firstName"] ?? "");
     $lastName = trim($reqData["lastName"] ?? "");
     $email = trim($reqData["email"] ?? "");
     $phone = trim($reqData["phone"] ?? "");
 
     if (
-        $userIdStr === "" ||
+        $userId === 0 ||
         $firstName === "" || 
         $lastName === "" ||
         $email === "" ||
@@ -39,7 +39,6 @@ try {
     ) 
         bad("Missing fields");
 
-    $userId = (int)$userIdStr;
 
     // connect to mysql
     $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
@@ -60,9 +59,11 @@ try {
         err($e);
     }
 
+    $contactId = $conn->insert_id;  
+
     $stmt->close();
     $conn->close();
-    ok("Contact added");
+    ok(["contactId" => $contactId]);
 
 } catch (\Throwable $e) {
     err($e->getMessage());

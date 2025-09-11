@@ -13,6 +13,14 @@ function bad($err) {
     echo json_encode(["status" => "Bad request", "err" => $err]);
     exit;
 }
+
+function conflict($err) {
+    http_response_code(409);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Conflict", "err" => $err]);
+    exit;
+}
+
 function err($err) {
     http_response_code(500);
     header('Content-Type: application/json');
@@ -26,6 +34,9 @@ try {
 
     $username = trim($reqData["username"]);
     $password = (string)($reqData["password"] ?? "");
+
+    if ($username === "" || $password === "") 
+        bad("Missing fields");
 
     $hash = password_hash($password, PASSWORD_DEFAULT);
 
@@ -42,24 +53,18 @@ try {
 
     // handle insert failure
     if (!$stmt->execute()) {
-        // if row already exists...
-        if ($conn->errno === 1062) {
-            $stmt->close();
-            $conn->close();
-            bad("User already exists");
-        }
-        // other error
-        $e = $conn->error;
+        $err = $conn->error;
         $stmt->close();
         $conn->close();
-        err($e);
+        err($err);
     }
 
     $stmt->close();
     $conn->close();
     ok("User created");
 
-
 } catch (\Throwable $e) {
+    if ($e->getCode() === 1062) 
+        conflict("User already exists");
     err($e->getMessage());
 }

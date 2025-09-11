@@ -13,6 +13,12 @@ function bad($err) {
     echo json_encode(["status" => "Bad request", "err" => $err]);
     exit;
 }
+function notFound($err) {
+    http_response_code(404);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Not found", "err" => $err]);
+    exit;
+}
 function err($err) {
     http_response_code(500);
     header('Content-Type: application/json');
@@ -23,11 +29,11 @@ function err($err) {
 try {
     $reqData = json_decode(file_get_contents('php://input'), true);
 
-    $userId    = (int)(trim($reqData["userId"] ?? ""));
-    $contactId = (int)(trim($reqData["contactId"] ?? ""));
+    $userId = $reqData["userId"] ?? 0;
+    $contactId = $reqData["contactId"] ?? 0;
 
     if ($userId === 0 || $contactId === 0) 
-        bad("Missing userId or contactId");
+        bad("Missing/invalid fields");
 
     // connect to mysql
     $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
@@ -51,7 +57,7 @@ try {
     if ($stmt->affected_rows === 0) {
         $stmt->close();
         $conn->close();
-        bad("No contact found or not authorized");
+        notFound("No contact found");
     }
 
     $stmt->close();
