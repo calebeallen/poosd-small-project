@@ -1,0 +1,75 @@
+<?php
+// Simple demo login (mysqli + password_verify)
+
+function ok($data) {
+    http_response_code(200);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Success", "data" => $data]);
+    exit;
+}
+function bad($err) {
+    http_response_code(400);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Bad request", "err" => $err]);
+    exit;
+}
+function err($err) {
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Error", "err" => $err]);
+    exit;
+}
+
+try {
+
+    $reqData = json_decode(file_get_contents('php://input'), true);
+
+    $userIdStr = trim($reqData["userId"] ?? "");
+    $query = trim($reqData["query"] ?? "");
+
+    if ($userIdsStr === "" || $query === "") 
+        bad("username and password required");
+
+    $userId = (int)$userIdStr;
+
+    // connect to mysql
+    $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
+    if ($conn->connect_error) 
+        err($conn->connect_error);
+
+    // get user by username
+   $stmt = $conn->prepare("
+        SELECT contactID, userID, firstName, lastName, email, phoneNumber
+        FROM contacts
+        WHERE userID = ?
+        AND (
+            firstName   LIKE CONCAT('%', ?, '%')
+            OR lastName    LIKE CONCAT('%', ?, '%')
+            OR email       LIKE CONCAT('%', ?, '%')
+            OR phoneNumber LIKE CONCAT('%', ?, '%')
+        )
+    ");
+    if (!$stmt) {
+        err($conn->error);
+    }
+
+    $stmt->bind_param("issss", $userId, $query, $query, $query, $query);
+
+    if (!$stmt->execute()) {
+        $err = $conn->error;
+        $stmt->close();
+        $conn->close();
+        err($err);
+    }
+
+    $res = $stmt->get_result();
+    $rows = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
+
+    // return user data
+    $stmt->close();
+    $conn->close();
+    ok($rows);
+
+} catch (\Throwable $e) {
+    err($e->getMessage());
+}
