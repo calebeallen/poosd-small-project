@@ -117,44 +117,30 @@ function addContact() {
     return;
   }
 
-  // TODO: Replace with actual API call when backend is ready
-  // const userId = localStorage.getItem("userId");
-  // const payload = { userId, name, phone, email, address };
-  // fetch(apiBase + "/addContact.php", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload)
-  // })
-  // .then(res => res.json())
-  // .then(response => {
-  //   if (response.success) {
-  //     clearForm();
-  //     loadContacts(); // Refresh contact list
-  //     showTemporaryMessage("Contact added successfully!", "success");
-  //   } else {
-  //     alert("Error adding contact. Please try again.");
-  //   }
-  // })
-  // .catch(error => {
-  //   alert("Error adding contact. Please try again.");
-  // });
+  const nameParts = name.split(" ");
+  const firstName = nameParts[0];
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-  // Mock add contact - remove when backend is ready
-  const newContact = {
-    id: mockContacts.length + 1,
-    name,
-    phone: phone || "Not provided",
-    email: email || "Not provided",
-    address: address || "Not provided"
-  };
-
-  mockContacts.push(newContact);
-  clearForm();
-  updateContactCount();
-  
-  liveSearchContacts();
-  
-  showTemporaryMessage("Contact added successfully!", "success");
+  const userId = localStorage.getItem("userId");
+  const payload = { userId, firstName, lastName, email, phone };
+  fetch(apiBase + "/AddContact.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.status == "Success") {
+      clearForm();
+      loadContacts(); // Refresh contact list
+      showTemporaryMessage("Contact added successfully!", "success");
+    } else {
+      alert("Error adding contact. Please try again.");
+    }
+  })
+  .catch(error => {
+    alert("Error adding contact. Please try again.");
+  });
 }
 
 function searchContacts() {
@@ -243,33 +229,26 @@ function deleteContact(id) {
     return;
   }
 
-  // TODO: Replace with actual API call when backend is ready
-  // const payload = { contactId: id };
-  // fetch(apiBase + "/deleteContact.php", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload)
-  // })
-  // .then(res => res.json())
-  // .then(response => {
-  //   if (response.success) {
-  //     loadContacts(); // Refresh contact list
-  //     showTemporaryMessage("Contact deleted successfully!", "success");
-  //   } else {
-  //     alert("Error deleting contact. Please try again.");
-  //   }
-  // })
-  // .catch(error => {
-  //   alert("Error deleting contact. Please try again.");
-  // });
+  const userId = localStorage.getItem("userId");
+  const payload = { userid: parseInt(userId), contactId: id };
+  fetch(apiBase + "/DeleteContact.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.status == "Success") {
+      loadContacts(); // Refresh contact list
+      showTemporaryMessage("Contact deleted successfully!", "success");
+    } else {
+      alert("Error deleting contact. Please try again.");
+    }
+  })
+  .catch(error => {
+    alert("Error deleting contact. Please try again.");
+  });
 
-  // Mock delete contact - remove when backend is ready
-  mockContacts = mockContacts.filter(contact => contact.id !== id);
-  updateContactCount();
-  
-  liveSearchContacts();
-  
-  showTemporaryMessage("Contact deleted successfully!", "success");
 }
 
 function clearForm() {
