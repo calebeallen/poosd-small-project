@@ -1,4 +1,4 @@
-// const apiBase = "http://ourdomain.com/LAMPAPI"; // Uncomment when backend is ready
+const apiBase = "http://137.184.94.213/api"; 
 
 function doLogin() {
   const username = document.getElementById("loginName").value.trim();
