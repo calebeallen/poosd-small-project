@@ -15,6 +15,12 @@ function bad($err) {
     echo json_encode(["status" => "Bad request", "err" => $err]);
     exit;
 }
+function notFound($err) {
+    http_response_code(404);
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Not found", "err" => $err]);
+    exit;
+}
 function err($err) {
     http_response_code(500);
     header('Content-Type: application/json');
@@ -33,7 +39,7 @@ try {
     $phone = trim($reqData["phone"] ?? "");
 
     if (
-        $userId === 0 ||
+        $contactId === 0 ||
         $firstName === "" || 
         $lastName === "" ||
         $email === "" ||
@@ -51,6 +57,7 @@ try {
     $stmt = $conn->prepare("UPDATE Contacts SET firstName = ?, lastName = ?, email = ?, phoneNumber = ? WHERE contactID = ?");
     if (!$stmt) 
         err($conn->error);
+    $stmt->bind_param("ssssi", $firstName, $lastName, $email, $phone, $contactId);
 
     // handle error
     if (!$stmt->execute()) {
@@ -58,6 +65,12 @@ try {
         $stmt->close();
         $conn->close();
         err($e);
+    }
+
+    if ($stmt->affected_rows === 0) {
+        $stmt->close();
+        $conn->close();
+        notFound("Contact not found / no changes made");
     }
 
     $contactId = $conn->insert_id;  
