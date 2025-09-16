@@ -1,3 +1,4 @@
+
 <?php
 // Simple demo login (mysqli + password_verify)
 
@@ -25,9 +26,8 @@ try {
     $reqData = json_decode(file_get_contents('php://input'), true);
 
     $userId = $reqData["userId"] ?? 0;
-    $query = trim($reqData["query"] ?? "");
 
-    if ($userId === 0 || $query === "") 
+    if ($userId === 0) 
         bad("Missing fields");
 
     // connect to mysql
@@ -35,23 +35,12 @@ try {
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // get user by username
-   $stmt = $conn->prepare("
-        SELECT contactID, firstName, lastName, email, phoneNumber
-        FROM Contacts  
-        WHERE userID = ?
-        AND (
-            firstName   LIKE CONCAT('%', ?, '%')
-            OR lastName    LIKE CONCAT('%', ?, '%')
-            OR email       LIKE CONCAT('%', ?, '%')
-            OR phoneNumber LIKE CONCAT('%', ?, '%')
-        )
-    ");
+    // get user by userID
+    $stmt = $conn->prepare("SELECT contactID, firstName, lastName, email, phoneNumber FROM Contacts WHERE userID = ?");
     if (!$stmt) {
         err($conn->error);
     }
-
-    $stmt->bind_param("issss", $userId, $query, $query, $query, $query);
+    $stmt->bind_param("i", $userId);
 
     if (!$stmt->execute()) {
         $err = $conn->error;
