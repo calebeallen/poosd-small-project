@@ -1,19 +1,13 @@
 const apiBase = "http://137.184.94.213/api"; 
 
-let mockContacts = [
-  { id: 1, name: "John Doe", phone: "555-1234", email: "john@example.com", address: "123 Main St" },
-  { id: 2, name: "Jane Smith", phone: "555-5678", email: "jane@example.com", address: "456 Oak Ave" },
-  { id: 3, name: "Bob Johnson", phone: "555-9012", email: "bob@example.com", address: "789 Pine Rd" }
-];
-
+let contacts = []; // Changed from mockContacts to contacts for clarity
 let searchTimeout;
 let editingContactId = null;
 
 function initializeDashboard() {
   const username = localStorage.getItem("username") || "User";
   document.getElementById("welcomeMessage").textContent = `Welcome, ${username}!`;
-  updateContactCount();
-  showAllContacts();
+  loadContacts(); // Load contacts from API on initialization
   setupLiveSearch();
 }
 
@@ -59,14 +53,14 @@ function toggleClearButton(show) {
 function clearSearch() {
   document.getElementById("searchQuery").value = "";
   toggleClearButton(false);
-  displayContacts(mockContacts);
+  displayContacts(contacts);
 }
 
 function liveSearchContacts() {
   const query = document.getElementById("searchQuery").value.toLowerCase().trim();
 
   if (!query) {
-    displayContacts(mockContacts);
+    displayContacts(contacts);
     return;
   }
 
@@ -80,14 +74,22 @@ function liveSearchContacts() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        userId: userId,
+        userId: parseInt(userId),
         query: query
       })
     })
       .then(res => res.json())
       .then(results => {
         if (results.status === "Success") {
-          displayContacts(results.data);
+          // Transform API response to match display format
+          const transformedContacts = results.data.map(contact => ({
+            id: contact.contactID,
+            name: `${contact.firstName} ${contact.lastName}`.trim(),
+            phone: contact.phoneNumber || "Not provided",
+            email: contact.email || "Not provided",
+            address: "Not provided" // Address not in current API
+          }));
+          displayContacts(transformedContacts);
         } else {
           console.error("Search error:", results.err);
           displayContacts([]);
@@ -154,7 +156,8 @@ function addContact() {
   const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
   const userId = localStorage.getItem("userId");
-  const payload = { userId, firstName, lastName, email, phone };
+  const payload = { userId: parseInt(userId), firstName, lastName, email, phone };
+  
   fetch(apiBase + "/AddContact.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -162,21 +165,22 @@ function addContact() {
   })
   .then(res => res.json())
   .then(response => {
-    if (response.status == "Success") {
-      clearForm();
+    if (response.status === "Success") {
+      closeModal('addModal');
       loadContacts(); // Refresh contact list
       showTemporaryMessage("Contact added successfully!", "success");
     } else {
-      alert("Error adding contact. Please try again.");
+      alert("Error adding contact: " + (response.err || "Please try again."));
     }
   })
   .catch(error => {
+    console.error("Error adding contact:", error);
     alert("Error adding contact. Please try again.");
   });
 }
 
 function editContact(id) {
-  const contact = mockContacts.find(c => c.id === id);
+  const contact = contacts.find(c => c.id === id);
   if (!contact) return;
 
   editingContactId = id;
@@ -208,42 +212,37 @@ function updateContact() {
     return;
   }
 
-  // TODO: Replace with actual API call when backend is ready
-  // const payload = { contactId: editingContactId, name, phone, email, address };
-  // fetch(apiBase + "/updateContact.php", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload)
-  // })
-  // .then(res => res.json())
-  // .then(response => {
-  //   if (response.success) {
-  //     liveSearchContacts();
-  //     closeModal('editModal');
-  //     showTemporaryMessage("Contact updated successfully!", "success");
-  //   } else {
-  //     alert("Error updating contact. Please try again.");
-  //   }
-  // })
-  // .catch(error => {
-  //   alert("Error updating contact. Please try again.");
-  // });
+  const nameParts = name.split(" ");
+  const firstName = nameParts[0];
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
-  // Mock update contact - remove when backend is ready
-  const contactIndex = mockContacts.findIndex(c => c.id === editingContactId);
-  if (contactIndex !== -1) {
-    mockContacts[contactIndex] = {
-      id: editingContactId,
-      name,
-      phone: phone || "Not provided",
-      email: email || "Not provided",
-      address: address || "Not provided"
-    };
+  const payload = { 
+    contactId: editingContactId, 
+    firstName, 
+    lastName, 
+    email: email || "", 
+    phone: phone || "" 
+  };
 
-    liveSearchContacts();
-    closeModal('editModal');
-    showTemporaryMessage("Contact updated successfully!", "success");
-  }
+  fetch(apiBase + "/EditContact.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.status === "Success") {
+      closeModal('editModal');
+      loadContacts(); // Refresh contact list
+      showTemporaryMessage("Contact updated successfully!", "success");
+    } else {
+      alert("Error updating contact: " + (response.err || "Please try again."));
+    }
+  })
+  .catch(error => {
+    console.error("Error updating contact:", error);
+    alert("Error updating contact. Please try again.");
+  });
 }
 
 function searchContacts() {
@@ -251,32 +250,48 @@ function searchContacts() {
 }
 
 function showAllContacts() {
-  // TODO: Replace with actual API call when backend is ready
-  // loadContacts();
-
   // Clear search input and show all contacts
   clearSearch();
 }
 
-// TODO: Add this function when backend is ready
-// function loadContacts() {
-//   const userId = localStorage.getItem("userId");
-//   fetch(apiBase + "/getContacts.php?userId=" + userId)
-//     .then(res => res.json())
-//     .then(contacts => {
-//       mockContacts = contacts; // Update local contacts
-//       displayContacts(contacts);
-//       updateContactCount();
-//     })
-//     .catch(error => {
-//       alert("Error loading contacts. Please try again.");
-//     });
-// }
+// Load contacts from API
+function loadContacts() {
+  const userId = localStorage.getItem("userId");
+  
+  fetch(apiBase + "/GetAllContacts.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId: parseInt(userId) })
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.status === "Success") {
+      // Transform API response to match display format
+      contacts = response.data.map(contact => ({
+        id: contact.contactID,
+        name: `${contact.firstName} ${contact.lastName}`.trim(),
+        phone: contact.phoneNumber || "Not provided",
+        email: contact.email || "Not provided",
+        address: "Not provided" // Address not in current API
+      }));
+      
+      displayContacts(contacts);
+      updateContactCount();
+    } else {
+      console.error("Error loading contacts:", response.err);
+      alert("Error loading contacts: " + (response.err || "Please try again."));
+    }
+  })
+  .catch(error => {
+    console.error("Fetch error:", error);
+    alert("Error loading contacts. Please try again.");
+  });
+}
 
-function displayContacts(contacts) {
+function displayContacts(contactsToDisplay) {
   const resultsList = document.getElementById("results");
   
-  if (contacts.length === 0) {
+  if (contactsToDisplay.length === 0) {
     const query = document.getElementById("searchQuery").value.trim();
     if (query) {
       resultsList.innerHTML = `<p>No contacts found for "<strong>${query}</strong>".</p>`;
@@ -286,7 +301,7 @@ function displayContacts(contacts) {
     return;
   }
 
-  resultsList.innerHTML = contacts.map(contact => `
+  resultsList.innerHTML = contactsToDisplay.map(contact => `
     <div class="contact-item">
       <div class="contact-name">${highlightSearchTerm(contact.name)}</div>
       <div class="contact-details">
@@ -324,7 +339,8 @@ function deleteContact(id) {
   }
 
   const userId = localStorage.getItem("userId");
-  const payload = { userid: parseInt(userId), contactId: id };
+  const payload = { userId: parseInt(userId), contactId: id };
+  
   fetch(apiBase + "/DeleteContact.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -332,17 +348,17 @@ function deleteContact(id) {
   })
   .then(res => res.json())
   .then(response => {
-    if (response.status == "Success") {
+    if (response.status === "Success") {
       loadContacts(); // Refresh contact list
       showTemporaryMessage("Contact deleted successfully!", "success");
     } else {
-      alert("Error deleting contact. Please try again.");
+      alert("Error deleting contact: " + (response.err || "Please try again."));
     }
   })
   .catch(error => {
+    console.error("Error deleting contact:", error);
     alert("Error deleting contact. Please try again.");
   });
-
 }
 
 function clearAddForm() {
@@ -353,7 +369,7 @@ function clearAddForm() {
 }
 
 function updateContactCount() {
-  document.getElementById("contactCount").textContent = mockContacts.length;
+  document.getElementById("contactCount").textContent = contacts.length;
 }
 
 function showTemporaryMessage(message, type) {
