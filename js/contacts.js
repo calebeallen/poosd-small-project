@@ -1,4 +1,4 @@
-// const apiBase = "http://yourdomain.com/LAMPAPI"; // Uncomment when backend is ready
+const apiBase = "http://137.184.94.213/api/"; 
 
 let mockContacts = [
   { id: 1, name: "John Doe", phone: "555-1234", email: "john@example.com", address: "123 Main St" },
@@ -7,6 +7,7 @@ let mockContacts = [
 ];
 
 let searchTimeout;
+let editingContactId = null;
 
 function initializeDashboard() {
   const username = localStorage.getItem("username") || "User";
@@ -63,36 +64,40 @@ function clearSearch() {
 
 function liveSearchContacts() {
   const query = document.getElementById("searchQuery").value.toLowerCase().trim();
-  
+
   if (!query) {
     displayContacts(mockContacts);
     return;
   }
 
-  // TODO: Replace with actual API call when backend is ready
-  // const userId = localStorage.getItem("userId");
-  // clearTimeout(searchTimeout);
-  // searchTimeout = setTimeout(() => {
-  //   fetch(apiBase + "/searchContacts.php?userId=" + userId + "&query=" + encodeURIComponent(query))
-  //     .then(res => res.json())
-  //     .then(results => {
-  //       displayContacts(results);
-  //     })
-  //     .catch(error => {
-  //       console.error("Search error:", error);
-  //       displayContacts([]); // Show no results on error
-  //     });
-  // }, 300);
+  const userId = localStorage.getItem("userId");
 
-  // Mock search - remove when backend is ready
-  const results = mockContacts.filter(contact =>
-    contact.name.toLowerCase().includes(query) ||
-    contact.phone.includes(query) ||
-    contact.email.toLowerCase().includes(query) ||
-    contact.address.toLowerCase().includes(query)
-  );
-
-  displayContacts(results);
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    fetch(apiBase + "/SearchContact.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        userId: userId,
+        query: query
+      })
+    })
+      .then(res => res.json())
+      .then(results => {
+        if (results.status === "Success") {
+          displayContacts(results.data);
+        } else {
+          console.error("Search error:", results.err);
+          displayContacts([]);
+        }
+      })
+      .catch(error => {
+        console.error("Fetch error:", error);
+        displayContacts([]);
+      });
+  }, 300);
 }
 
 function logout() {
@@ -101,11 +106,38 @@ function logout() {
   window.location.href = "index.html";
 }
 
+// Modal functions
+function openAddModal() {
+  clearAddForm();
+  openModal('addModal');
+}
+
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  modal.classList.add('show');
+  
+  // Focus first input
+  const firstInput = modal.querySelector('input');
+  if (firstInput) {
+    setTimeout(() => firstInput.focus(), 100);
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  modal.classList.remove('show');
+  
+  if (modalId === 'editModal') {
+    editingContactId = null;
+  }
+}
+
+// Contact management functions
 function addContact() {
-  const name = document.getElementById("contactName").value.trim();
-  const phone = document.getElementById("contactPhone").value.trim();
-  const email = document.getElementById("contactEmail").value.trim();
-  const address = document.getElementById("contactAddress").value.trim();
+  const name = document.getElementById("addContactName").value.trim();
+  const phone = document.getElementById("addContactPhone").value.trim();
+  const email = document.getElementById("addContactEmail").value.trim();
+  const address = document.getElementById("addContactAddress").value.trim();
 
   if (!name) {
     alert("Name is required!");
@@ -143,32 +175,109 @@ function addContact() {
   });
 }
 
+function editContact(id) {
+  const contact = mockContacts.find(c => c.id === id);
+  if (!contact) return;
+
+  editingContactId = id;
+
+  // Populate edit form
+  document.getElementById("editContactName").value = contact.name;
+  document.getElementById("editContactPhone").value = contact.phone === "Not provided" ? "" : contact.phone;
+  document.getElementById("editContactEmail").value = contact.email === "Not provided" ? "" : contact.email;
+  document.getElementById("editContactAddress").value = contact.address === "Not provided" ? "" : contact.address;
+
+  openModal('editModal');
+}
+
+function updateContact() {
+  if (!editingContactId) return;
+
+  const name = document.getElementById("editContactName").value.trim();
+  const phone = document.getElementById("editContactPhone").value.trim();
+  const email = document.getElementById("editContactEmail").value.trim();
+  const address = document.getElementById("editContactAddress").value.trim();
+
+  if (!name) {
+    alert("Name is required!");
+    return;
+  }
+
+  if (email && !isValidEmail(email)) {
+    alert("Please enter a valid email address!");
+    return;
+  }
+
+  // TODO: Replace with actual API call when backend is ready
+  // const payload = { contactId: editingContactId, name, phone, email, address };
+  // fetch(apiBase + "/updateContact.php", {
+  //   method: "POST",
+  //   headers: { "Content-Type": "application/json" },
+  //   body: JSON.stringify(payload)
+  // })
+  // .then(res => res.json())
+  // .then(response => {
+  //   if (response.success) {
+  //     liveSearchContacts();
+  //     closeModal('editModal');
+  //     showTemporaryMessage("Contact updated successfully!", "success");
+  //   } else {
+  //     alert("Error updating contact. Please try again.");
+  //   }
+  // })
+  // .catch(error => {
+  //   alert("Error updating contact. Please try again.");
+  // });
+
+  // Mock update contact - remove when backend is ready
+  const contactIndex = mockContacts.findIndex(c => c.id === editingContactId);
+  if (contactIndex !== -1) {
+    mockContacts[contactIndex] = {
+      id: editingContactId,
+      name,
+      phone: phone || "Not provided",
+      email: email || "Not provided",
+      address: address || "Not provided"
+    };
+
+    liveSearchContacts();
+    closeModal('editModal');
+    showTemporaryMessage("Contact updated successfully!", "success");
+  }
+}
+
 function searchContacts() {
   liveSearchContacts();
 }
 
 function showAllContacts() {
-  // TODO: Replace with actual API call when backend is ready
-  // loadContacts();
-
+  loadContacts();
   // Clear search input and show all contacts
   clearSearch();
 }
 
 // TODO: Add this function when backend is ready
-// function loadContacts() {
-//   const userId = localStorage.getItem("userId");
-//   fetch(apiBase + "/getContacts.php?userId=" + userId)
-//     .then(res => res.json())
-//     .then(contacts => {
-//       mockContacts = contacts; // Update local contacts
-//       displayContacts(contacts);
-//       updateContactCount();
-//     })
-//     .catch(error => {
-//       alert("Error loading contacts. Please try again.");
-//     });
-// }
+function loadContacts() {
+  const userId = localStorage.getItem("userId");
+  fetch(apiBase + "/GetAllContacts.php" ,{
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({userId: parseInt(userId,10)}) 
+  })
+    .then(res => res.json())
+    .then(response => {
+      if (response.status === "Success") {
+        const contacts = response.data; 
+        displayContacts(contacts);
+        updateContactCount();
+      } else {
+        alert("Error loading contacts. Please try again.");
+      }
+    })
+    .catch(error => {
+      alert("Error loading contacts. Please try again.");
+    });
+}
 
 function displayContacts(contacts) {
   const resultsList = document.getElementById("results");
@@ -192,8 +301,14 @@ function displayContacts(contacts) {
         <strong>Address:</strong> ${highlightSearchTerm(contact.address)}
       </div>
       <div class="contact-actions">
-        <button class="btn-secondary" onclick="editContact(${contact.id})">Edit</button>
-        <button class="btn-danger" onclick="deleteContact(${contact.id})">Delete</button>
+        <button class="btn-secondary" onclick="editContact(${contact.id})">
+        Edit
+        <img src="images/edit.png" alt="Edit" style="width:16px; height:16px; vertical-align: middle; filter: invert(1);">
+        </button>
+        <button class="btn-danger" onclick="deleteContact(${contact.id})">
+        Delete
+        <img src="images/trashcan.png" alt="Delete" style="width:16px; height:16px; vertical-align: middle; filter: invert(1);">
+        </button>
       </div>
     </div>
   `).join("");
@@ -209,28 +324,13 @@ function highlightSearchTerm(text) {
   return text.replace(regex, '<mark>$1</mark>');
 }
 
-function editContact(id) {
-  const contact = mockContacts.find(c => c.id === id);
-  if (!contact) return;
-
-  document.getElementById("contactName").value = contact.name;
-  document.getElementById("contactPhone").value = contact.phone === "Not provided" ? "" : contact.phone;
-  document.getElementById("contactEmail").value = contact.email === "Not provided" ? "" : contact.email;
-  document.getElementById("contactAddress").value = contact.address === "Not provided" ? "" : contact.address;
-
-  mockContacts = mockContacts.filter(c => c.id !== id);
-  updateContactCount();
-  
-  liveSearchContacts();
-}
-
 function deleteContact(id) {
   if (!confirm("Are you sure you want to delete this contact?")) {
     return;
   }
 
   const userId = localStorage.getItem("userId");
-  const payload = { userid: parseInt(userId), contactId: id };
+  const payload = { userId: parseInt(userId), contactId: id };
   fetch(apiBase + "/DeleteContact.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -251,11 +351,11 @@ function deleteContact(id) {
 
 }
 
-function clearForm() {
-  document.getElementById("contactName").value = "";
-  document.getElementById("contactPhone").value = "";
-  document.getElementById("contactEmail").value = "";
-  document.getElementById("contactAddress").value = "";
+function clearAddForm() {
+  document.getElementById("addContactName").value = "";
+  document.getElementById("addContactPhone").value = "";
+  document.getElementById("addContactEmail").value = "";
+  document.getElementById("addContactAddress").value = "";
 }
 
 function updateContactCount() {
@@ -269,7 +369,7 @@ function showTemporaryMessage(message, type) {
   messageDiv.style.position = "fixed";
   messageDiv.style.top = "20px";
   messageDiv.style.right = "20px";
-  messageDiv.style.zIndex = "1000";
+  messageDiv.style.zIndex = "2001";
   messageDiv.style.minWidth = "250px";
   messageDiv.style.textAlign = "center";
   
@@ -294,4 +394,74 @@ document.addEventListener("DOMContentLoaded", function() {
   }
   
   initializeDashboard();
+});
+
+// Event listeners for modal functionality
+document.addEventListener("click", function(e) {
+  if (e.target.classList.contains('modal')) {
+    closeModal(e.target.id);
+  }
+});
+
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    const openModal = document.querySelector('.modal.show');
+    if (openModal) {
+      closeModal(openModal.id);
+    }
+  }
+});
+
+let deathstarClicked = false;
+
+function initializeDeathStar() {
+  const deathstar = document.querySelector(".deathstar");
+  
+  if (deathstar) {
+    deathstar.addEventListener("click", handleDeathStarClick);
+  }
+}
+
+function handleDeathStarClick() {
+  if (deathstarClicked) return;
+  
+  deathstarClicked = true;
+  const deathstar = document.querySelector(".deathstar");
+  
+  const message = createTrapMessage();
+  document.body.appendChild(message);
+  
+  setTimeout(() => {
+    deathstar.classList.add("replaced");
+    
+    setTimeout(() => {
+      deathstar.classList.add("fade");
+      
+      message.classList.add("fade-out");
+      
+      setTimeout(() => {
+        if (document.body.contains(message)) {
+          document.body.removeChild(message);
+        }
+        setTimeout(() => {
+          if (document.body.contains(deathstar)) {
+            deathstar.style.display = 'none';
+          }
+        }, 2000);
+      }, 1000);
+      
+    }, 3000);
+  }, 1500);
+}
+
+function createTrapMessage() {
+  const messageDiv = document.createElement("div");
+  messageDiv.className = "deathstar-message";
+  messageDiv.textContent = "IT'S A TRAP!";
+  
+  return messageDiv;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  initializeDeathStar();
 });
