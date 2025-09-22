@@ -81,15 +81,17 @@ function liveSearchContacts() {
       .then(res => res.json())
       .then(results => {
         if (results.status === "Success") {
-          // Transform API response to match display format
-          const transformedContacts = results.data.map(contact => ({
-            id: contact.contactID,
-            name: `${contact.firstName} ${contact.lastName}`.trim(),
-            phone: contact.phoneNumber || "Not provided",
-            email: contact.email || "Not provided",
-            address: "Not provided" // Address not in current API
-          }));
-          displayContacts(transformedContacts);
+          const rawData = results.data;
+          const formattedContacts = rawData.map(contact => {
+            return {
+              id: contact.contactID,
+              name: `${contact.firstName} ${contact.lastName}`.trim(),
+              phone: contact.phoneNumber,
+              email: contact.email,
+              address: ''
+            };
+          });
+          displayContacts(formattedContacts);
         } else {
           console.error("Search error:", results.err);
           displayContacts([]);
@@ -165,8 +167,8 @@ function addContact() {
   })
   .then(res => res.json())
   .then(response => {
-    if (response.status === "Success") {
-      closeModal('addModal');
+    if (response.status == "Success") {
+      clearAddForm();
       loadContacts(); // Refresh contact list
       showTemporaryMessage("Contact added successfully!", "success");
     } else {
@@ -212,37 +214,29 @@ function updateContact() {
     return;
   }
 
-  const nameParts = name.split(" ");
-  const firstName = nameParts[0];
-  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-
-  const payload = { 
-    contactId: editingContactId, 
-    firstName, 
-    lastName, 
-    email: email || "", 
-    phone: phone || "" 
-  };
-
-  fetch(apiBase + "/EditContact.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(response => {
-    if (response.status === "Success") {
-      closeModal('editModal');
-      loadContacts(); // Refresh contact list
-      showTemporaryMessage("Contact updated successfully!", "success");
-    } else {
-      alert("Error updating contact: " + (response.err || "Please try again."));
-    }
-  })
-  .catch(error => {
-    console.error("Error updating contact:", error);
-    alert("Error updating contact. Please try again.");
-  });
+  // TODO: Replace with actual API call when backend is ready
+  //const nameParts = name.split(" ");
+  //const firstName = nameParts[0];
+  //const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+  //const payload = { contactId: editingContactId, firstName, lastName, phone, email };
+  //fetch(apiBase + "/EditContact.php", {
+  //  method: "POST",
+  //  headers: { "Content-Type": "application/json" },
+  //  body: JSON.stringify(payload)
+  //})
+  //.then(res => res.json())
+  //.then(response => {
+  //  if (response.stats === "Success") {
+  //    loadContacts();
+  //   closeModal('editModal');
+  //   showTemporaryMessage("Contact updated successfully!", "success");
+  //  } else {
+   //   alert("Error updating contact. Please try again.");
+  //  }
+ // })
+  //.catch(error => {
+    //alert("Error updating contact. Please try again.");
+  //});
 }
 
 function searchContacts() {
@@ -250,42 +244,44 @@ function searchContacts() {
 }
 
 function showAllContacts() {
+  loadContacts();
+
   // Clear search input and show all contacts
   clearSearch();
 }
 
-// Load contacts from API
+// TODO: Add this function when backend is ready
 function loadContacts() {
   const userId = localStorage.getItem("userId");
-  
   fetch(apiBase + "/GetAllContacts.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId: parseInt(userId) })
+    body: JSON.stringify({ userId: parseInt(userId, 10) })
   })
-  .then(res => res.json())
-  .then(response => {
-    if (response.status === "Success") {
-      // Transform API response to match display format
-      contacts = response.data.map(contact => ({
-        id: contact.contactID,
-        name: `${contact.firstName} ${contact.lastName}`.trim(),
-        phone: contact.phoneNumber || "Not provided",
-        email: contact.email || "Not provided",
-        address: "Not provided" // Address not in current API
-      }));
-      
-      displayContacts(contacts);
-      updateContactCount();
-    } else {
-      console.error("Error loading contacts:", response.err);
-      alert("Error loading contacts: " + (response.err || "Please try again."));
-    }
-  })
-  .catch(error => {
-    console.error("Fetch error:", error);
-    alert("Error loading contacts. Please try again.");
-  });
+    .then(res => res.json())
+    .then(response => {
+      if (response.status === "Success") {
+        const rawData = response.data;
+        const formattedContacts = rawData.map(contact => {
+          return {
+            id: contact.contactID,
+            name: `${contact.firstName} ${contact.lastName}`.trim(),
+            phone: contact.phoneNumber,
+            email: contact.email,
+            address: '' 
+          };
+        });
+        mockContacts = formattedContacts;
+        displayContacts(mockContacts);
+        updateContactCount();
+        
+      } else {
+        alert("Error loading contacts. Please try again.");
+      }
+    })
+    .catch(error => {
+      alert("Error loading contacts. Please try again.");
+    });
 }
 
 function displayContacts(contactsToDisplay) {
@@ -337,10 +333,9 @@ function deleteContact(id) {
   if (!confirm("Are you sure you want to delete this contact?")) {
     return;
   }
-
+  //TODO: bug fix 
   const userId = localStorage.getItem("userId");
-  const payload = { userId: parseInt(userId), contactId: id };
-  
+  const payload = { userId: parseInt(userId), contactId: parseInt(id) };
   fetch(apiBase + "/DeleteContact.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
