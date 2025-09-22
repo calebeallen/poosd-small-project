@@ -87,7 +87,17 @@ function liveSearchContacts() {
       .then(res => res.json())
       .then(results => {
         if (results.status === "Success") {
-          displayContacts(results.data);
+          const rawData = results.data;
+          const formattedContacts = rawData.map(contact => {
+            return {
+              id: contact.contactID,
+              name: `${contact.firstName} ${contact.lastName}`.trim(),
+              phone: contact.phoneNumber,
+              email: contact.email,
+              address: ''
+            };
+          });
+          displayContacts(formattedContacts);
         } else {
           console.error("Search error:", results.err);
           displayContacts([]);
@@ -163,7 +173,7 @@ function addContact() {
   .then(res => res.json())
   .then(response => {
     if (response.status == "Success") {
-      clearForm();
+      clearAddForm();
       loadContacts(); // Refresh contact list
       showTemporaryMessage("Contact added successfully!", "success");
     } else {
@@ -209,41 +219,28 @@ function updateContact() {
   }
 
   // TODO: Replace with actual API call when backend is ready
-  // const payload = { contactId: editingContactId, name, phone, email, address };
-  // fetch(apiBase + "/updateContact.php", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(payload)
-  // })
-  // .then(res => res.json())
-  // .then(response => {
-  //   if (response.success) {
-  //     liveSearchContacts();
-  //     closeModal('editModal');
-  //     showTemporaryMessage("Contact updated successfully!", "success");
-  //   } else {
-  //     alert("Error updating contact. Please try again.");
-  //   }
-  // })
-  // .catch(error => {
-  //   alert("Error updating contact. Please try again.");
-  // });
-
-  // Mock update contact - remove when backend is ready
-  const contactIndex = mockContacts.findIndex(c => c.id === editingContactId);
-  if (contactIndex !== -1) {
-    mockContacts[contactIndex] = {
-      id: editingContactId,
-      name,
-      phone: phone || "Not provided",
-      email: email || "Not provided",
-      address: address || "Not provided"
-    };
-
-    liveSearchContacts();
-    closeModal('editModal');
-    showTemporaryMessage("Contact updated successfully!", "success");
-  }
+  //const nameParts = name.split(" ");
+  //const firstName = nameParts[0];
+  //const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+  //const payload = { contactId: editingContactId, firstName, lastName, phone, email };
+  //fetch(apiBase + "/EditContact.php", {
+  //  method: "POST",
+  //  headers: { "Content-Type": "application/json" },
+  //  body: JSON.stringify(payload)
+  //})
+  //.then(res => res.json())
+  //.then(response => {
+  //  if (response.stats === "Success") {
+  //    loadContacts();
+  //   closeModal('editModal');
+  //   showTemporaryMessage("Contact updated successfully!", "success");
+  //  } else {
+   //   alert("Error updating contact. Please try again.");
+  //  }
+ // })
+  //.catch(error => {
+    //alert("Error updating contact. Please try again.");
+  //});
 }
 
 function searchContacts() {
@@ -322,9 +319,9 @@ function deleteContact(id) {
   if (!confirm("Are you sure you want to delete this contact?")) {
     return;
   }
-
+  //TODO: bug fix 
   const userId = localStorage.getItem("userId");
-  const payload = { userid: parseInt(userId), contactId: id };
+  const payload = { userId: parseInt(userId), contactId: parseInt(id) };
   fetch(apiBase + "/DeleteContact.php", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -342,7 +339,6 @@ function deleteContact(id) {
   .catch(error => {
     alert("Error deleting contact. Please try again.");
   });
-
 }
 
 function clearAddForm() {
