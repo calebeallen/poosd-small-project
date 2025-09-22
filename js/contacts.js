@@ -1,13 +1,13 @@
 const apiBase = "http://137.184.94.213/api"; 
 
-let contacts = []; // Changed from mockContacts to contacts for clarity
+let contacts = [];
 let searchTimeout;
 let editingContactId = null;
 
 function initializeDashboard() {
   const username = localStorage.getItem("username") || "User";
   document.getElementById("welcomeMessage").textContent = `Welcome, ${username}!`;
-  loadContacts(); // Load contacts from API on initialization
+  loadContacts();
   setupLiveSearch();
 }
 
@@ -110,7 +110,6 @@ function logout() {
   window.location.href = "index.html";
 }
 
-// Modal functions
 function openAddModal() {
   clearAddForm();
   openModal('addModal');
@@ -120,7 +119,6 @@ function openModal(modalId) {
   const modal = document.getElementById(modalId);
   modal.classList.add('show');
   
-  // Focus first input
   const firstInput = modal.querySelector('input');
   if (firstInput) {
     setTimeout(() => firstInput.focus(), 100);
@@ -136,7 +134,6 @@ function closeModal(modalId) {
   }
 }
 
-// Contact management functions
 function addContact() {
   const name = document.getElementById("addContactName").value.trim();
   const phone = document.getElementById("addContactPhone").value.trim();
@@ -169,7 +166,7 @@ function addContact() {
   .then(response => {
     if (response.status == "Success") {
       clearAddForm();
-      loadContacts(); // Refresh contact list
+      loadContacts();
       showTemporaryMessage("Contact added successfully!", "success");
     } else {
       alert("Error adding contact: " + (response.err || "Please try again."));
@@ -187,7 +184,6 @@ function editContact(id) {
 
   editingContactId = id;
 
-  // Populate edit form
   document.getElementById("editContactName").value = contact.name;
   document.getElementById("editContactPhone").value = contact.phone === "Not provided" ? "" : contact.phone;
   document.getElementById("editContactEmail").value = contact.email === "Not provided" ? "" : contact.email;
@@ -195,6 +191,7 @@ function editContact(id) {
 
   openModal('editModal');
 }
+
 
 function updateContact() {
   if (!editingContactId) return;
@@ -214,29 +211,37 @@ function updateContact() {
     return;
   }
 
-  // TODO: Replace with actual API call when backend is ready
-  //const nameParts = name.split(" ");
-  //const firstName = nameParts[0];
-  //const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
-  //const payload = { contactId: editingContactId, firstName, lastName, phone, email };
-  //fetch(apiBase + "/EditContact.php", {
-  //  method: "POST",
-  //  headers: { "Content-Type": "application/json" },
-  //  body: JSON.stringify(payload)
-  //})
-  //.then(res => res.json())
-  //.then(response => {
-  //  if (response.stats === "Success") {
-  //    loadContacts();
-  //   closeModal('editModal');
-  //   showTemporaryMessage("Contact updated successfully!", "success");
-  //  } else {
-   //   alert("Error updating contact. Please try again.");
-  //  }
- // })
-  //.catch(error => {
-    //alert("Error updating contact. Please try again.");
-  //});
+  const nameParts = name.split(" ");
+  const firstName = nameParts[0];
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+  
+  const payload = { 
+    contactId: editingContactId, 
+    firstName, 
+    lastName, 
+    phone, 
+    email 
+  };
+  
+  fetch(apiBase + "/EditContact.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(response => {
+    if (response.status === "Success") {
+      loadContacts();
+      closeModal('editModal');
+      showTemporaryMessage("Contact updated successfully!", "success");
+    } else {
+      alert("Error updating contact: " + (response.err || "Please try again."));
+    }
+  })
+  .catch(error => {
+    console.error("Error updating contact:", error);
+    alert("Error updating contact. Please try again.");
+  });
 }
 
 function searchContacts() {
@@ -246,11 +251,9 @@ function searchContacts() {
 function showAllContacts() {
   loadContacts();
 
-  // Clear search input and show all contacts
   clearSearch();
 }
 
-// TODO: Add this function when backend is ready
 function loadContacts() {
   const userId = localStorage.getItem("userId");
   fetch(apiBase + "/GetAllContacts.php", {
@@ -271,8 +274,8 @@ function loadContacts() {
             address: '' 
           };
         });
-        mockContacts = formattedContacts;
-        displayContacts(mockContacts);
+        contacts = formattedContacts;
+        displayContacts(contacts);
         updateContactCount();
         
       } else {
@@ -333,7 +336,6 @@ function deleteContact(id) {
   if (!confirm("Are you sure you want to delete this contact?")) {
     return;
   }
-  //TODO: bug fix 
   const userId = localStorage.getItem("userId");
   const payload = { userId: parseInt(userId), contactId: parseInt(id) };
   fetch(apiBase + "/DeleteContact.php", {
@@ -344,7 +346,7 @@ function deleteContact(id) {
   .then(res => res.json())
   .then(response => {
     if (response.status === "Success") {
-      loadContacts(); // Refresh contact list
+      loadContacts(); 
       showTemporaryMessage("Contact deleted successfully!", "success");
     } else {
       alert("Error deleting contact: " + (response.err || "Please try again."));
@@ -401,7 +403,6 @@ document.addEventListener("DOMContentLoaded", function() {
   initializeDashboard();
 });
 
-// Event listeners for modal functionality
 document.addEventListener("click", function(e) {
   if (e.target.classList.contains('modal')) {
     closeModal(e.target.id);
