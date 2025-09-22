@@ -248,27 +248,45 @@ function searchContacts() {
 }
 
 function showAllContacts() {
-  // TODO: Replace with actual API call when backend is ready
-  // loadContacts();
+  loadContacts();
 
   // Clear search input and show all contacts
   clearSearch();
 }
 
 // TODO: Add this function when backend is ready
-// function loadContacts() {
-//   const userId = localStorage.getItem("userId");
-//   fetch(apiBase + "/getContacts.php?userId=" + userId)
-//     .then(res => res.json())
-//     .then(contacts => {
-//       mockContacts = contacts; // Update local contacts
-//       displayContacts(contacts);
-//       updateContactCount();
-//     })
-//     .catch(error => {
-//       alert("Error loading contacts. Please try again.");
-//     });
-// }
+function loadContacts() {
+  const userId = localStorage.getItem("userId");
+  fetch(apiBase + "/GetAllContacts.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId: parseInt(userId, 10) })
+  })
+    .then(res => res.json())
+    .then(response => {
+      if (response.status === "Success") {
+        const rawData = response.data;
+        const formattedContacts = rawData.map(contact => {
+          return {
+            id: contact.contactID,
+            name: `${contact.firstName} ${contact.lastName}`.trim(),
+            phone: contact.phoneNumber,
+            email: contact.email,
+            address: '' 
+          };
+        });
+        mockContacts = formattedContacts;
+        displayContacts(mockContacts);
+        updateContactCount();
+        
+      } else {
+        alert("Error loading contacts. Please try again.");
+      }
+    })
+    .catch(error => {
+      alert("Error loading contacts. Please try again.");
+    });
+}
 
 function displayContacts(contacts) {
   const resultsList = document.getElementById("results");
