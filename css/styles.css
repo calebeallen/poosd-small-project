@@ -2,6 +2,7 @@
   --primary-background: #969AAB;
   --primary-text: #090C10;
   --primary-error: #dc3545;
+  --primary-blue: #5a6fd8;
 }
 
 body {
@@ -231,7 +232,7 @@ input {
 
 input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -301,16 +302,16 @@ button:hover {
 }
 
 .btn-danger:hover {
-  background: #c82333;
+  background: var(--primary-error);
   box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
 }
 
 .btn-primary {
-  background: #667eea;
+  background: var(--primary-blue);
 }
 
 .btn-primary:hover {
-  background: #5a6fd8;
+  background: #5e74d7;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
@@ -579,7 +580,7 @@ mark {
 }
 
 #searchQuery:focus {
-  border-color: #667eea;
+  border-color: var(--primary-blue);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   transform: scale(1.02);
 }
@@ -597,7 +598,7 @@ mark {
   width: 16px;
   height: 16px;
   border: 2px solid #f3f3f3;
-  border-top: 2px solid #667eea;
+  border-top: 2px solid var(--primary-blue);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
