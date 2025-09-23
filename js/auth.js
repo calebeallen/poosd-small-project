@@ -1,4 +1,4 @@
-const apiBase = "http://137.184.94.213/api"; 
+const apiBase = "http://spacecontacts.xyz/api"; 
 
 function doLogin() {
   const username = document.getElementById("loginName").value.trim();
