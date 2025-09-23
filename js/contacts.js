@@ -1,4 +1,4 @@
-const apiBase = "http://137.184.94.213/api"; 
+const apiBase = "http://spacecontacts.xyz/api"; 
 
 let contacts = [];
 let searchTimeout;
