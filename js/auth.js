@@ -4,8 +4,21 @@ function doLogin() {
   const username = document.getElementById("loginName").value.trim();
   const password = document.getElementById("loginPassword").value;
   
-  if (!username || !password) {
-    showMessage("loginResult", "Please enter both username and password", "error");
+  clearFieldErrors(['loginName', 'loginPassword']);
+  
+  const errors = [];
+  
+  if (!username) {
+    errors.push({ field: 'loginName', message: 'Username is required' });
+  }
+  
+  if (!password) {
+    errors.push({ field: 'loginPassword', message: 'Password is required' });
+  }
+  
+  if (errors.length > 0) {
+    showFieldErrors(errors);
+    showMessage("loginResult", "Please fill in the required fields", "error");
     return;
   }
 
@@ -29,7 +42,6 @@ function doLogin() {
   .catch(error => {
     showMessage("loginResult", "Login error. Please try again.", "error");
   });
-  
 }
 
 function doSignup() {
@@ -37,17 +49,32 @@ function doSignup() {
   const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value;
 
-  if (!username || !email || !password) {
-    showMessage("signupResult", "Please fill in all fields", "error");
-    return;
-  }
-
-  if (!isValidEmail(email)) {
-    showMessage("signupResult", "Please enter a valid email address", "error");
-    return;
-  }
-
+  clearMessages();
+  clearFieldErrors(['signupName', 'signupEmail', 'signupPassword']);
   
+  const errors = [];
+  
+  if (!username) {
+    errors.push({ field: 'signupName', message: 'Username is required' });
+  }
+  
+  if (!email) {
+    errors.push({ field: 'signupEmail', message: 'Email is required' });
+  } else if (!isValidEmail(email)) {
+    errors.push({ field: 'signupEmail', message: 'Please enter a valid email address' });
+  }
+  
+  if (!password) {
+    errors.push({ field: 'signupPassword', message: 'Password is required' });
+  }
+  
+  if (errors.length > 0) {
+    showFieldErrors(errors);
+    const errorMessages = errors.map(e => e.message).join(', ');
+    showMessage("signupResult", errorMessages, "error");
+    return;
+  }
+
    const payload = { username: username, email: email, password: password };
    fetch(apiBase + "/Register.php", {
      method: "POST",
@@ -69,20 +96,20 @@ function doSignup() {
    .catch(error => {
      showMessage("signupResult", "Signup error. Please try again.", "error");
    });
-
-  
 }
 
 function showLogin() {
   document.getElementById("signupForm").classList.add("hidden");
   document.getElementById("loginDiv").classList.remove("hidden");
   clearMessages();
+  clearFieldErrors(['signupName', 'signupEmail', 'signupPassword']);
 }
 
 function showSignup() {
   document.getElementById("loginDiv").classList.add("hidden");
   document.getElementById("signupForm").classList.remove("hidden");
   clearMessages();
+  clearFieldErrors(['loginName', 'loginPassword']);
 }
 
 function clearMessages() {
@@ -93,6 +120,37 @@ function clearMessages() {
 function showMessage(elementId, message, type) {
   const element = document.getElementById(elementId);
   element.innerHTML = `<div class="message ${type}">${message}</div>`;
+}
+
+function showFieldErrors(errors) {
+  errors.forEach(error => {
+    const field = document.getElementById(error.field);
+    if (field) {
+      field.classList.add('error');
+    }
+  });
+}
+
+function clearFieldErrors(fieldIds) {
+  fieldIds.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+      field.classList.remove('error');
+    }
+  });
+}
+
+function addInputListeners() {
+  const allInputs = ['loginName', 'loginPassword', 'signupName', 'signupEmail', 'signupPassword'];
+  
+  allInputs.forEach(inputId => {
+    const input = document.getElementById(inputId);
+    if (input) {
+      input.addEventListener('input', function() {
+        this.classList.remove('error');
+      });
+    }
+  });
 }
 
 function isValidEmail(email) {
@@ -161,4 +219,5 @@ function createTrapMessage() {
 
 document.addEventListener("DOMContentLoaded", function() {
   initializeDeathStar();
+  addInputListeners();
 });
