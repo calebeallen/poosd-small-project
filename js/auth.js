@@ -32,8 +32,9 @@ function doLogin() {
   .then(res => res.json())
   .then(response => {
     if (response.status === "Success" && response.data.id > 0) {
-      localStorage.setItem("userId", response.data.id);
-      localStorage.setItem("username", response.data.username);
+      // Note: Using sessionStorage instead of localStorage for demo purposes
+      sessionStorage.setItem("userId", response.data.id);
+      sessionStorage.setItem("username", response.data.username);
       window.location.href = "dashboard.html";
     } else {
       showMessage("loginResult", "Login failed.", "error");
@@ -48,9 +49,10 @@ function doSignup() {
   const username = document.getElementById("signupName").value.trim();
   const email = document.getElementById("signupEmail").value.trim();
   const password = document.getElementById("signupPassword").value;
+  const passwordConfirm = document.getElementById("signupPasswordConfirm").value;
 
   clearMessages();
-  clearFieldErrors(['signupName', 'signupEmail', 'signupPassword']);
+  clearFieldErrors(['signupName', 'signupEmail', 'signupPassword', 'signupPasswordConfirm']);
   
   const errors = [];
   
@@ -66,6 +68,14 @@ function doSignup() {
   
   if (!password) {
     errors.push({ field: 'signupPassword', message: 'Password is required' });
+  }
+  
+  if (!passwordConfirm) {
+    errors.push({ field: 'signupPasswordConfirm', message: 'Password confirmation is required' });
+  }
+  
+  if (password && passwordConfirm && password !== passwordConfirm) {
+    errors.push({ field: 'signupPasswordConfirm', message: 'Passwords do not match' });
   }
   
   if (errors.length > 0) {
@@ -102,7 +112,7 @@ function showLogin() {
   document.getElementById("signupForm").classList.add("hidden");
   document.getElementById("loginDiv").classList.remove("hidden");
   clearMessages();
-  clearFieldErrors(['signupName', 'signupEmail', 'signupPassword']);
+  clearFieldErrors(['signupName', 'signupEmail', 'signupPassword', 'signupPasswordConfirm']);
 }
 
 function showSignup() {
@@ -141,13 +151,26 @@ function clearFieldErrors(fieldIds) {
 }
 
 function addInputListeners() {
-  const allInputs = ['loginName', 'loginPassword', 'signupName', 'signupEmail', 'signupPassword'];
+  const allInputs = ['loginName', 'loginPassword', 'signupName', 'signupEmail', 'signupPassword', 'signupPasswordConfirm'];
   
   allInputs.forEach(inputId => {
     const input = document.getElementById(inputId);
     if (input) {
       input.addEventListener('input', function() {
         this.classList.remove('error');
+        
+        // Real-time password confirmation validation
+        if (inputId === 'signupPassword' || inputId === 'signupPasswordConfirm') {
+          const password = document.getElementById('signupPassword').value;
+          const confirmPassword = document.getElementById('signupPasswordConfirm').value;
+          const confirmField = document.getElementById('signupPasswordConfirm');
+          
+          if (confirmPassword && password !== confirmPassword) {
+            confirmField.classList.add('error');
+          } else {
+            confirmField.classList.remove('error');
+          }
+        }
       });
     }
   });
