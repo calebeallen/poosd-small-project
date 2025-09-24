@@ -36,7 +36,7 @@ try {
         err($conn->connect_error);
 
     // get user by userID
-    $stmt = $conn->prepare("SELECT contactID, firstName, lastName, email, phoneNumber FROM Contacts WHERE userID = ?");
+    $stmt = $conn->prepare("SELECT contactID, firstName, lastName, email, phoneNumber, address FROM Contacts WHERE userID = ?");
     if (!$stmt) {
         err($conn->error);
     }

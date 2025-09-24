@@ -37,6 +37,7 @@ try {
     $lastName = trim($reqData["lastName"] ?? "");
     $email = trim($reqData["email"] ?? "");
     $phone = trim($reqData["phone"] ?? "");
+    $address = trim($reqData["address"] ??"");
 
     if (
         $contactId === 0 ||
@@ -54,10 +55,10 @@ try {
         err($conn->connect_error);
 
     // insert contact
-    $stmt = $conn->prepare("UPDATE Contacts SET firstName = ?, lastName = ?, email = ?, phoneNumber = ? WHERE contactID = ?");
+    $stmt = $conn->prepare("UPDATE Contacts SET firstName = ?, lastName = ?, email = ?, phoneNumber = ?, address = ? WHERE contactID = ?");
     if (!$stmt) 
         err($conn->error);
-    $stmt->bind_param("ssssi", $firstName, $lastName, $email, $phone, $contactId);
+    $stmt->bind_param("sssssi", $firstName, $lastName, $email, $phone, $address, $contactId);
 
     // handle error
     if (!$stmt->execute()) {

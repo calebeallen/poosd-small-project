@@ -29,13 +29,15 @@ try {
     $lastName = trim($reqData["lastName"] ?? "");
     $email = trim($reqData["email"] ?? "");
     $phone = trim($reqData["phone"] ?? "");
+    $address = trim($reqData["address"] ??"");
 
     if (
         $userId === 0 ||
         $firstName === "" || 
         $lastName === "" ||
         $email === "" ||
-        $phone === ""
+        $phone === "" ||
+        $address === ""
     ) 
         bad("Missing fields");
 
@@ -46,10 +48,10 @@ try {
         err($conn->connect_error);
 
     // insert contact
-    $stmt = $conn->prepare("INSERT INTO Contacts (userID, firstName, lastName, email, phoneNumber) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO Contacts (userID, firstName, lastName, email, phoneNumber, address) VALUES (?, ?, ?, ?, ?, ?)");
     if (!$stmt) 
         err($conn->error);
-    $stmt->bind_param("issss", $userId, $firstName, $lastName, $email, $phone);
+    $stmt->bind_param("isssss", $userId, $firstName, $lastName, $email, $phone, $address);
 
     // handle error
     if (!$stmt->execute()) {

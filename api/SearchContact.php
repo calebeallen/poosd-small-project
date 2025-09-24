@@ -37,21 +37,22 @@ try {
 
     // get user by username
    $stmt = $conn->prepare("
-        SELECT contactID, firstName, lastName, email, phoneNumber
+        SELECT contactID, firstName, lastName, email, phoneNumber, address
         FROM Contacts  
         WHERE userID = ?
         AND (
-            firstName   LIKE CONCAT('%', ?, '%')
-            OR lastName    LIKE CONCAT('%', ?, '%')
-            OR email       LIKE CONCAT('%', ?, '%')
+            firstName LIKE CONCAT('%', ?, '%')
+            OR lastName LIKE CONCAT('%', ?, '%')
+            OR email LIKE CONCAT('%', ?, '%')
             OR phoneNumber LIKE CONCAT('%', ?, '%')
+            OR address LIKE CONCAT('%', ?, '%')
         )
     ");
     if (!$stmt) {
         err($conn->error);
     }
 
-    $stmt->bind_param("issss", $userId, $query, $query, $query, $query);
+    $stmt->bind_param("issss", $userId, $query, $query, $query, $query, $query);
 
     if (!$stmt->execute()) {
         $err = $conn->error;
