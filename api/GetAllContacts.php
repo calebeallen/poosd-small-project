@@ -1,4 +1,3 @@
-
 <?php
 // Simple demo login (mysqli + password_verify)
 
@@ -35,7 +34,7 @@ try {
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // get user by userID
+    // get user by userID - FIXED: removed quotes around 'address'
     $stmt = $conn->prepare("SELECT contactID, firstName, lastName, email, phoneNumber, address FROM Contacts WHERE userID = ?");
     if (!$stmt) {
         err($conn->error);

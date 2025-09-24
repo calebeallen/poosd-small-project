@@ -34,12 +34,9 @@ try {
     if (
         $userId === 0 ||
         $firstName === "" || 
-        $lastName === "" ||
-        $email === "" ||
-        $phone === "" ||
-        $address === ""
+        $lastName === ""
     ) 
-        bad("Missing fields");
+        bad("Missing required fields");
 
 
     // connect to mysql
@@ -47,7 +44,7 @@ try {
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // insert contact
+    // insert contact - FIXED: removed quotes around 'address'
     $stmt = $conn->prepare("INSERT INTO Contacts (userID, firstName, lastName, email, phoneNumber, address) VALUES (?, ?, ?, ?, ?, ?)");
     if (!$stmt) 
         err($conn->error);

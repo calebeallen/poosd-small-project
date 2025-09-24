@@ -86,9 +86,9 @@ function liveSearchContacts() {
             return {
               id: contact.contactID,
               name: `${contact.firstName} ${contact.lastName}`.trim(),
-              phone: contact.phoneNumber,
-              email: contact.email,
-              address: ''
+              phone: contact.phoneNumber || "Not provided",
+              email: contact.email || "Not provided",
+              address: contact.address || "Not provided"
             };
           });
           displayContacts(formattedContacts);
@@ -155,7 +155,7 @@ function addContact() {
   const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
 
   const userId = localStorage.getItem("userId");
-  const payload = { userId: parseInt(userId), firstName, lastName, email, phone };
+  const payload = { userId: parseInt(userId), firstName, lastName, email, phone, address };
   
   fetch(apiBase + "/AddContact.php", {
     method: "POST",
@@ -167,6 +167,7 @@ function addContact() {
     if (response.status == "Success") {
       clearAddForm();
       loadContacts();
+      closeModal('addModal');
       showTemporaryMessage("Contact added successfully!", "success");
     } else {
       alert("Error adding contact: " + (response.err || "Please try again."));
@@ -220,7 +221,8 @@ function updateContact() {
     firstName, 
     lastName, 
     phone, 
-    email 
+    email,
+    address
   };
   
   fetch(apiBase + "/EditContact.php", {
@@ -269,9 +271,9 @@ function loadContacts() {
           return {
             id: contact.contactID,
             name: `${contact.firstName} ${contact.lastName}`.trim(),
-            phone: contact.phoneNumber,
-            email: contact.email,
-            address: '' 
+            phone: contact.phoneNumber || "Not provided",
+            email: contact.email || "Not provided",
+            address: contact.address || "Not provided"
           };
         });
         contacts = formattedContacts;
@@ -306,7 +308,7 @@ function displayContacts(contactsToDisplay) {
       <div class="contact-details">
         <strong>Phone:</strong> ${highlightSearchTerm(contact.phone)}<br>
         <strong>Email:</strong> ${highlightSearchTerm(contact.email)}<br>
-        <strong>Address:</strong> ${highlightSearchTerm(contact.address)}
+        <strong>Address:</strong> ${highlightSearchTerm(contact.address)}<br>
       </div>
       <div class="contact-actions">
         <button class="btn-secondary" onclick="editContact(${contact.id})">
