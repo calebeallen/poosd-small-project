@@ -1,5 +1,3 @@
-
-
 <?php
 // Simple demo login (mysqli + password_verify)
 
@@ -42,11 +40,9 @@ try {
     if (
         $contactId === 0 ||
         $firstName === "" || 
-        $lastName === "" ||
-        $email === "" ||
-        $phone === ""
+        $lastName === ""
     ) 
-        bad("Missing fields");
+        bad("Missing required fields");
 
 
     // connect to mysql
@@ -54,7 +50,7 @@ try {
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // insert contact
+    // update contact - FIXED: removed quotes around 'address'
     $stmt = $conn->prepare("UPDATE Contacts SET firstName = ?, lastName = ?, email = ?, phoneNumber = ?, address = ? WHERE contactID = ?");
     if (!$stmt) 
         err($conn->error);
@@ -73,8 +69,6 @@ try {
         $conn->close();
         notFound("Contact not found / no changes made");
     }
-
-    $contactId = $conn->insert_id;  
 
     $stmt->close();
     $conn->close();
