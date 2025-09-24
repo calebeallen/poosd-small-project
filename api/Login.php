@@ -36,12 +36,10 @@ try {
     if ($username === "" || $password === "") 
         bad("Missing fields");
 
-    // connect to mysql
     $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // get user by username
     $stmt = $conn->prepare("SELECT userID, username, passwordHash FROM Users WHERE username = ?");
     if (!$stmt)
         err($conn->error);
@@ -57,14 +55,12 @@ try {
     $res = $stmt->get_result();
     $row = $res ? $res->fetch_assoc() : null;
 
-    // check that user entry was found and pwd hash is matches
     if (!$row || !password_verify($password, $row['passwordHash'])) {
         $stmt->close();
         $conn->close();
         unauth("Invalid credentials");
     }
 
-    // return user data
     $stmt->close();
     $conn->close();
     ok([

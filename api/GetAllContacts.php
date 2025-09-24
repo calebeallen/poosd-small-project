@@ -29,12 +29,10 @@ try {
     if ($userId === 0) 
         bad("Missing fields");
 
-    // connect to mysql
     $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // get user by userID - FIXED: removed quotes around 'address'
     $stmt = $conn->prepare("SELECT contactID, firstName, lastName, email, phoneNumber, address FROM Contacts WHERE userID = ?");
     if (!$stmt) {
         err($conn->error);
@@ -51,7 +49,6 @@ try {
     $res = $stmt->get_result();
     $rows = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
 
-    // return user data
     $stmt->close();
     $conn->close();
     ok($rows);
