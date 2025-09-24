@@ -50,7 +50,7 @@ try {
         err($conn->error);
     }
 
-    $stmt->bind_param("issss", $userId, $query, $query, $query, $query, $query);
+    $stmt->bind_param("isssss", $userId, $query, $query, $query, $query, $query);
 
     if (!$stmt->execute()) {
         $err = $conn->error;
