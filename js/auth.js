@@ -32,9 +32,8 @@ function doLogin() {
   .then(res => res.json())
   .then(response => {
     if (response.status === "Success" && response.data.id > 0) {
-      // Note: Using sessionStorage instead of localStorage for demo purposes
-      sessionStorage.setItem("userId", response.data.id);
-      sessionStorage.setItem("username", response.data.username);
+      localStorage.setItem("userId", response.data.id);
+      localStorage.setItem("username", response.data.username);
       window.location.href = "dashboard.html";
     } else {
       showMessage("loginResult", "Login failed.", "error");
@@ -69,11 +68,11 @@ function doSignup() {
   if (!password) {
     errors.push({ field: 'signupPassword', message: 'Password is required' });
   }
-  
+
   if (!passwordConfirm) {
     errors.push({ field: 'signupPasswordConfirm', message: 'Password confirmation is required' });
   }
-  
+
   if (password && passwordConfirm && password !== passwordConfirm) {
     errors.push({ field: 'signupPasswordConfirm', message: 'Passwords do not match' });
   }
@@ -112,7 +111,7 @@ function showLogin() {
   document.getElementById("signupForm").classList.add("hidden");
   document.getElementById("loginDiv").classList.remove("hidden");
   clearMessages();
-  clearFieldErrors(['signupName', 'signupEmail', 'signupPassword', 'signupPasswordConfirm']);
+  clearFieldErrors(['signupName', 'signupEmail', 'signupPassword']);
 }
 
 function showSignup() {
@@ -158,19 +157,17 @@ function addInputListeners() {
     if (input) {
       input.addEventListener('input', function() {
         this.classList.remove('error');
-        
-        // Real-time password confirmation validation
-        if (inputId === 'signupPassword' || inputId === 'signupPasswordConfirm') {
-          const password = document.getElementById('signupPassword').value;
-          const confirmPassword = document.getElementById('signupPasswordConfirm').value;
-          const confirmField = document.getElementById('signupPasswordConfirm');
-          
-          if (confirmPassword && password !== confirmPassword) {
-            confirmField.classList.add('error');
-          } else {
-            confirmField.classList.remove('error');
-          }
-        }
+    if (inputId === 'signupPassword' || inputId === 'signupPasswordConfirm') {
+      const password = document.getElementById('signupPassword').value;
+      const confirmPassword = document.getElementById('signupPasswordConfirm').value;
+      const confirmField = document.getElementById('signupPasswordConfirm');
+      
+      if (confirmPassword && password !== confirmPassword) {
+        confirmField.classList.add('error');
+      } else {
+        confirmField.classList.remove('error');
+      }
+    }
       });
     }
   });
