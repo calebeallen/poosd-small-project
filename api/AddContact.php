@@ -39,18 +39,15 @@ try {
         bad("Missing required fields");
 
 
-    // connect to mysql
     $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // insert contact - FIXED: removed quotes around 'address'
     $stmt = $conn->prepare("INSERT INTO Contacts (userID, firstName, lastName, email, phoneNumber, address) VALUES (?, ?, ?, ?, ?, ?)");
     if (!$stmt) 
         err($conn->error);
     $stmt->bind_param("isssss", $userId, $firstName, $lastName, $email, $phone, $address);
 
-    // handle error
     if (!$stmt->execute()) {
         $e = $conn->error;
         $stmt->close();

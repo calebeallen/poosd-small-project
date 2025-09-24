@@ -30,12 +30,10 @@ try {
     if ($userId === 0 || $query === "") 
         bad("Missing fields");
 
-    // connect to mysql
     $conn = new mysqli("localhost", "appuser", 'M9ASwv#4$z94', "contact_manager");
     if ($conn->connect_error) 
         err($conn->connect_error);
 
-    // get user by username
    $stmt = $conn->prepare("
         SELECT contactID, firstName, lastName, email, phoneNumber, address
         FROM Contacts  
@@ -64,7 +62,6 @@ try {
     $res = $stmt->get_result();
     $rows = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
 
-    // return user data
     $stmt->close();
     $conn->close();
     ok($rows);
